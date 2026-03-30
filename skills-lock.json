@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+    },
+    "web-audio": {
+      "source": "matthewharwood/fantasy-phonics",
+      "sourceType": "github",
+      "computedHash": "0f16f2236b6723288d74f35e80f1d2ee30497ec47a77c125986351c218b31be8"
+    },
+    "web-components": {
+      "source": "manzdev/web-core",
+      "sourceType": "github",
+      "computedHash": "6f8a73cfdd37547663545883125e8804ff56db610149ac1c20e40cbdab43326c"
+    }
+  }
+}
