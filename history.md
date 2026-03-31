@@ -1,5 +1,15 @@
 # History
 
+## [2026-03-31] — Intégration du plugin WAM Soundfont via `<wam-host>`
+
+- **Fichiers modifiés** : `index.html`, `css/styles.css`, `js/script.js`
+- **Type** : `feature`
+- **Description** : Intégration déclarative du plugin WAM Soundfont via les web components `<wam-host>` et `<wam-plugin>` (chargés depuis `mainline.i3s.unice.fr`). Ajout d'une quatrième fenêtre draggable `#win-wam` positionnée en bas à droite du layout 2×2 initial. La fenêtre respecte le même système de magnétisme que les autres.
+- **Raison** : Approche déclarative plus propre que le chargement manuel JS — le `<wam-host>` gère lui-même le contexte audio et le rendu du plugin.
+- **Skills appliqués** : `web-audio`, `web-components`
+
+---
+
 ## [2026-03-31] — Fenêtres draggables avec magnétisme (style WebAmp)
 
 - **Fichiers modifiés** : `index.html`, `css/styles.css`, `js/script.js`

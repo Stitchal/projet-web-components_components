@@ -22,11 +22,11 @@ window.onload = () => {
     waveform.getOutputNode().connect(ctx.destination);
 
     // 4eme phase : fenêtres draggables avec magnétisme
-    const wins = ['win-player', 'win-eq', 'win-waveform']
+    const wins = ['win-player', 'win-eq', 'win-waveform', 'win-wam']
         .map(id => document.querySelector('#' + id));
 
-    // Positions initiales : 2 fenêtres côte à côte, 1 en dessous à gauche
-    const W = 420, H = 322, GAP = 10; // 300px composant + 22px titlebar
+    // Positions initiales : 2 fenêtres côte à côte, 2 en dessous
+    const W = 420, H = 322, GAP = 10;
     const arenaH = window.innerHeight - 50;
     const sx = Math.max(10, (window.innerWidth - W * 2 - GAP) / 2);
     const sy = Math.max(10, (arenaH - H * 2 - GAP) / 2);
@@ -34,6 +34,7 @@ window.onload = () => {
     wins[0].style.cssText = `left:${sx}px; top:${sy}px`;
     wins[1].style.cssText = `left:${sx + W + GAP}px; top:${sy}px`;
     wins[2].style.cssText = `left:${sx}px; top:${sy + H + GAP}px`;
+    wins[3].style.cssText = `left:${sx + W + GAP}px; top:${sy + H + GAP}px`;
 
     initDraggable(wins);
 };
