@@ -29,9 +29,18 @@
         <h1>Studio — Lecteur Audio</h1>
     </header>
     <main>
-        <my-audio-player id="player"></my-audio-player>
-        <my-eq id="eq"></my-eq>
-        <my-waveform id="waveform"></my-waveform>
+        <div class="window" id="win-player">
+            <div class="titlebar"><span class="titlebar-dot"></span>PLAYER</div>
+            <my-audio-player id="player"></my-audio-player>
+        </div>
+        <div class="window" id="win-eq">
+            <div class="titlebar"><span class="titlebar-dot"></span>EQUALIZER</div>
+            <my-eq id="eq"></my-eq>
+        </div>
+        <div class="window" id="win-waveform">
+            <div class="titlebar"><span class="titlebar-dot"></span>WAVEFORM</div>
+            <my-waveform id="waveform"></my-waveform>
+        </div>
         <!-- <my-butterchurn id="butterchurn"></my-butterchurn> -->
     </main>
 </body>

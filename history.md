@@ -1,5 +1,17 @@
 # History
 
+## [2026-03-31] — Fenêtres draggables avec magnétisme (style WebAmp)
+
+- **Fichiers modifiés** : `index.html`, `css/styles.css`, `js/script.js`
+- **Fichiers créés** : `js/dragManager.js`
+- **Type** : `feature`
+- **Description** : Les trois composants sont désormais des fenêtres déplaçables à la souris via une titlebar. Un système de magnétisme (seuil 20px) colle les bords entre eux et sur les bords de l'arène. Chaque fenêtre monte au premier plan (z-index) au clic. Positions initiales centrées calculées dynamiquement depuis `window.innerWidth/Height`.
+- **Raison** : Expérience utilisateur inspirée de WebAmp — organisation libre des fenêtres audio.
+- **Skills appliqués** : `web-components`, `frontend-design`
+- **Décisions de design** : Module `dragManager.js` isolé (aucune dépendance aux composants). Les composants eux-mêmes ne sont pas modifiés. Le snap est indépendant sur les axes X et Y : le meilleur candidat par axe l'emporte.
+
+---
+
 ## [2026-03-31] — Migration CSS vers `adoptedStyleSheets`
 
 - **Fichiers modifiés** : `index.html`, `components/audioplayer.js`, `components/equalizer.js`, `components/waveform.js`
