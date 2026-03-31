@@ -13,7 +13,6 @@ export class ConnectableComponent extends HTMLElement {
      */
     setAudioContext(audioCtx) {
         this.audioCtx = audioCtx;
-        console.log(`${this.constructor.name}: setAudioContext called`, audioCtx);
         this.buildAudioGraph();
     }
 
@@ -54,8 +53,7 @@ export class ConnectableComponent extends HTMLElement {
             console.error(`${this.constructor.name}: connectComponent: component does not have getInputNode()`);
             return;
         }
-        let inputNode = component.getInputNode();
+        const inputNode = component.getInputNode();
         this.getOutputNode().connect(inputNode);
-        console.log(`${this.constructor.name}: connected to component`, component);
     }
 }

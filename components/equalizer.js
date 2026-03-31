@@ -78,13 +78,9 @@ const style = `
     }
 
     /* Hiding the requested section */
-    .input-range, 
-    div[class="input-range"] { 
-        display: none !important; 
-    }
-    /* hidden */
-    .input-range{
-        display: none;
+    .input-range,
+    div[class="input-range"] {
+        display: none !important;
     }
 </style>
 `;
@@ -175,7 +171,6 @@ class Equalizer extends ConnectableComponent {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.audioplayerSelector = this.getAttribute('audioplayer');
     this.filters = [];
     this.audioCtx = null;
   }
@@ -183,7 +178,7 @@ class Equalizer extends ConnectableComponent {
   connectedCallback() {
     // appelé lorsque le composant est ajouté au DOM
     // On crée l'interface utilisateur
-    this.shadowRoot.innerHTML = style + html;
+    this.shadowRoot.setHTMLUnsafe(style + html);
 
     // on n'a pas encore l'AudioContext, on l'obtiendra via setAudioContext()
     // on ne peut pas encore configurer le graphe audio
@@ -227,7 +222,6 @@ class Equalizer extends ConnectableComponent {
         if (this.filters[index]) {
           this.filters[index].gain.value = value;
           e.target.nextElementSibling.value = value + " dB";
-          console.log(`Equalizer: Set gain of filter ${index} to ${value} dB`);
         }
       });
     });
@@ -248,18 +242,6 @@ class Equalizer extends ConnectableComponent {
         });
       }
     });
-  }
-
-  resolveAssetsPath(path) {
-    let images = this.shadowRoot.querySelectorAll('img, webaudio-knob, webaudio-slider, webaudio-param');
-    images.forEach((e) => {
-      let imagePath = e.getAttribute('src');
-      e.src = path + imagePath;
-    });
-  }
-
-  getAudioElement() {
-    return this.audioElement;
   }
 }
 

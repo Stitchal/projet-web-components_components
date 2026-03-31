@@ -35,7 +35,7 @@ class MyAudioPlayer extends ConnectableComponent {
             return;
         }
 
-        let audioElement = this.shadowRoot.querySelector('#myplayer');
+        const audioElement = this.shadowRoot.querySelector('#myplayer');
         this.sourceNode = this.audioCtx.createMediaElementSource(audioElement);
         this.gain = this.audioCtx.createGain();
         this.panner = this.audioCtx.createStereoPanner();
@@ -46,7 +46,6 @@ class MyAudioPlayer extends ConnectableComponent {
         this.gain.connect(this.panner);
         this.panner.connect(this.outputNode);
 
-        console.log("AudioPlayer: Audio graph built");
     }
 
     getInputNode() { return this.sourceNode; }
@@ -72,7 +71,7 @@ class MyAudioPlayer extends ConnectableComponent {
 
         // Populate dropdown
         this.tracks.forEach((track, index) => {
-            let option = document.createElement('option');
+            const option = document.createElement('option');
             option.value = index;
             option.textContent = track.title;
             select.appendChild(option);
@@ -96,9 +95,6 @@ class MyAudioPlayer extends ConnectableComponent {
     }
 
     changeTrack(audioElement, coverImage, track) {
-        console.log("Changing track to:", track.title);
-        
-        // Update Audio Source
         audioElement.src = track.audio;
         this.src = track.audio; // Sync internal property
         
@@ -144,13 +140,12 @@ class MyAudioPlayer extends ConnectableComponent {
 
         // 1. Play/Pause Logic (Switch)
         if (switchEl) {
-            switchEl.addEventListener('click', () => {
+            switchEl.addEventListener('click', async () => {
                 if (audioElement.paused) {
                     if (this.audioCtx && this.audioCtx.state === 'suspended') {
-                        this.audioCtx.resume().then(() => audioElement.play());
-                    } else {
-                        audioElement.play();
+                        await this.audioCtx.resume();
                     }
+                    audioElement.play().catch(() => {});
                 } else {
                     audioElement.pause();
                 }
@@ -220,7 +215,7 @@ if (coverWrapper) {
         const y = event.clientY - centerY;
 
         // Calculate the angle in radians (Math.atan2 returns -PI to PI)
-        let angle = Math.atan2(y, x);
+        const angle = Math.atan2(y, x);
 
         // Convert to degrees and shift so that 0 degrees is at the top (12 o'clock)
         // By default, atan2(0,1) is 0 radians (3 o'clock)
@@ -239,7 +234,7 @@ if (coverWrapper) {
     }
 
     render() {
-        this.shadowRoot.innerHTML = `
+        this.shadowRoot.setHTMLUnsafe(`
         <style>
             * {
                 box-sizing: border-box;
@@ -415,7 +410,7 @@ if (coverWrapper) {
                 </webaudio-knob>
             </div>
         </div>
-        `;
+        `);
     }
 }
 

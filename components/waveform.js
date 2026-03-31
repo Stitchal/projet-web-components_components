@@ -40,8 +40,6 @@ class Waveform extends ConnectableComponent {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.audioplayerSelector = this.getAttribute('audioplayer');
-        this.filters = [];
         this.audioCtx = null;
         this.analyser = null;
         this.bufferLength = null;
@@ -53,7 +51,7 @@ class Waveform extends ConnectableComponent {
     }
 
     connectedCallback() {
-        this.shadowRoot.innerHTML = style + html;
+        this.shadowRoot.setHTMLUnsafe(style + html);
         this.canvas = this.shadowRoot.querySelector("#myCanvas");
         this.width = this.canvas.width;
         this.height = this.canvas.height;
@@ -100,23 +98,14 @@ class Waveform extends ConnectableComponent {
         // We will draw it as a path of connected lines
         // First, clear the previous path that was in the buffer
         this.canvasContext.beginPath();
-        // draw the data as a waveform
-        // Get the data from the analyser
-        if (this.analyser === null) {
-            requestAnimationFrame(() => this.visualize());
-            return;
-        }
-        this.analyser.getByteTimeDomainData(this.dataArray);
-        // values are between 0 and 255
 
         // slice width
-        let sliceWidth = this.width / this.bufferLength;
+        const sliceWidth = this.width / this.bufferLength;
         let x = 0;
         for (let i = 0; i < this.bufferLength; i++) {
-            let v = this.dataArray[i]; // between 0 and 255
-            v = v / 255; // now between 0 and 1
+            const v = this.dataArray[i] / 255;
 
-            let y = v * this.height;
+            const y = v * this.height;
             if (i === 0) {
                 this.canvasContext.moveTo(x, y);
             } else {

@@ -1,18 +1,14 @@
 window.onload = () => {
-    // appelé une fois que la page est chargée
-    console.log("Page loaded");
-
-    let ctx = new AudioContext();
-    console.log("AudioContext initialized:", ctx);
+    const ctx = new AudioContext();
 
     // 1ere phase : on cree les composants et on partage l'AudioContext
-    let player = document.querySelector('#player');
+    const player = document.querySelector('#player');
     player.setAudioContext(ctx);
 
-    let eq = document.querySelector('#eq');
+    const eq = document.querySelector('#eq');
     eq.setAudioContext(ctx);
 
-    let waveform = document.querySelector('#waveform');
+    const waveform = document.querySelector('#waveform');
     waveform.setAudioContext(ctx);
 
     // let butterchurn = document.querySelector('#butterchurn');
