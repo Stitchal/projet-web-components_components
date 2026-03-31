@@ -1,0 +1,35 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background-color: #060325;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+main {
+    display: grid;
+    /* On définit des colonnes qui s'adaptent au contenu ou ont une taille fixe */
+    grid-template-columns: repeat(2, max-content);
+    gap: 20px;
+    grid-template-rows: auto auto auto;
+    /* Centre la grille entière dans la page */
+    justify-content: center;
+    /* Centre les éléments à l'intérieur de leurs cellules (optionnel si max-content) */
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "title": "Cherry-Coloured Funk",
+    "artist": "Cocteau Twins",
+    "audio": "./assets/tracks/cherry-coloured-funk/track.mp3",
+    "cover": "./assets/tracks/cherry-coloured-funk/cover.png"
+  },
+  {
+    "id": 2,
+    "title": "Technopolis",
+    "artist": "Yellow Magic Orchestra",
+    "audio": "./assets/tracks/technopolis/track.mp3",
+    "cover": "./assets/tracks/technopolis/cover.png"
+  },
+    {
+        "id": 3,
+        "title": "D>E>A>T>H>M>E>T>A>L",
+        "artist": "Panchiko",
+        "audio": "./assets/tracks/death-metal/track.mp3",
+        "cover": "./assets/tracks/death-metal/cover.png"
+    }
+]

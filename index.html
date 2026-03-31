@@ -2,12 +2,30 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Projet Web Components 2025 - 2026</title>
+    <title>Test web component lecteur audio</title>
+    <!-- <script type="importmap">
+    {
+        "imports": {
+            "butterchurn": "https://esm.sh/butterchurn@2.6.7",
+            "butterchurn-presets": "https://esm.sh/butterchurn-presets@2.4.7"
+        }
+    }
+    </script> -->
+    <script src="./components/audioplayer.js" type="module"></script>
+    <script src="./components/equalizer.js" type="module"></script>
+    <script src="./components/waveform.js" type="module"></script>
+    <!-- <script src="./components/butterchurn.js" type="module"></script> -->
+    <script src="js/script.js"></script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
-    <H1>Hello</H1>
+    <main>
+        <my-audio-player id="player"></my-audio-player>
+        <my-eq id="eq"></my-eq>
+        <my-waveform id="waveform"></my-waveform>
+        <!-- <my-butterchurn id="butterchurn"></my-butterchurn> -->
+    </main>
 </body>
 
 </html>
