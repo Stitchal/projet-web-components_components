@@ -2,7 +2,8 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Test web component lecteur audio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Studio — Lecteur Audio</title>
     <!-- <script type="importmap">
     {
         "imports": {
@@ -16,10 +17,17 @@
     <script src="./components/waveform.js" type="module"></script>
     <!-- <script src="./components/butterchurn.js" type="module"></script> -->
     <script src="js/script.js" type="module"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700&display=swap">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
+    <header>
+        <span class="indicator"></span>
+        <h1>Studio — Lecteur Audio</h1>
+    </header>
     <main>
         <my-audio-player id="player"></my-audio-player>
         <my-eq id="eq"></my-eq>

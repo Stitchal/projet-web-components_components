@@ -1,5 +1,27 @@
 # History
 
+## [2026-03-31] — Migration CSS vers `adoptedStyleSheets`
+
+- **Fichiers modifiés** : `index.html`, `components/audioplayer.js`, `components/equalizer.js`, `components/waveform.js`
+- **Type** : `refactor`
+- **Description** : Remplacement des balises `<style>` injectées via `setHTMLUnsafe` par des `CSSStyleSheet` construits au niveau module et assignés via `shadowRoot.adoptedStyleSheets`. Google Fonts déplacées dans `index.html` (via `<link preconnect>`) car `@import` n'est pas supporté dans les constructed stylesheets. Le `const html` du player extrait de `render()` au niveau module.
+- **Raison** : Pratique moderne recommandée — la feuille CSS est partagée entre toutes les instances du composant (un seul objet en mémoire), séparation claire HTML / CSS dans le code.
+- **Skills appliqués** : `web-components`
+- **Décisions de design** : Fonts chargées une seule fois dans `index.html` ; elles héritent naturellement à travers le Shadow DOM via `font-family`.
+
+---
+
+## [2026-03-31] — Redesign visuel "Obsidian Studio"
+
+- **Fichiers modifiés** : `css/styles.css`, `index.html`, `components/audioplayer.js`, `components/equalizer.js`, `components/waveform.js`
+- **Type** : `style`
+- **Description** : Refonte complète de l'interface vers un thème "dark studio" : fond near-black (#08080f) avec halos ambiants, panneaux sombres (#11111c) avec bordures fines d'un pixel, accent ambre (#e8a020) pour la barre de progression du player, waveform verte électrique (#39e082) avec glow sur canvas, typographie `Space Mono` (valeurs numériques) + `Barlow Condensed` (labels). Ajout d'un header avec indicateur lumineux animé. Les valeurs dB de l'EQ s'allument en ambre dès qu'elles diffèrent de 0.
+- **Raison** : Modernisation de l'interface — sortir du bleu uniforme générique vers une esthétique rack hardware haut de gamme.
+- **Skills appliqués** : `frontend-design`, `web-components`
+- **Décisions de design** : Google Fonts chargées via `@import` CSS dans chaque Shadow DOM (pas de librairie JS). `shadowBlur` réinitialisé à 0 après chaque stroke canvas pour éviter les artefacts.
+
+---
+
 ## [2026-03-31] — Correction : restauration du bloc `.input-range` dans l'equalizer
 
 - **Fichiers modifiés** : `components/equalizer.js`

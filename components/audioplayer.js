@@ -1,6 +1,205 @@
 import "./libs/webaudiocontrols.js";
 import { ConnectableComponent } from "./ConnectableComponent.js";
 
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(/* css */`
+    * { box-sizing: border-box; }
+
+    #container {
+        height: 300px;
+        min-width: 420px;
+        background: #11111c;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-top-color: rgba(255, 255, 255, 0.12);
+        color: #ede9e0;
+        font-family: 'Barlow Condensed', sans-serif;
+        padding: 14px;
+        border-radius: 14px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 20%; right: 20%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+
+    #coverWrapper {
+        width: 158px;
+        height: 158px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: conic-gradient(#1a1a2a 0%, #1a1a2a 0%);
+        cursor: pointer;
+        position: relative;
+    }
+
+    #coverImage {
+        width: 148px;
+        height: 148px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #0d0d17;
+        position: relative;
+        z-index: 1;
+    }
+
+    #coverImage.playing {
+        animation: rotate 12s linear infinite;
+    }
+
+    @keyframes rotate {
+        to { transform: rotate(360deg); }
+    }
+
+    #playerContainer {
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        height: 100%;
+        flex: 1;
+    }
+
+    #trackInfo {
+        text-align: center;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    #trackTitle {
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #trackArtist {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(237, 233, 224, 0.38);
+        display: block;
+    }
+
+    select {
+        background: #1a1a2a;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 7px;
+        color: #ede9e0;
+        padding: 7px 30px 7px 10px;
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 0.9rem;
+        letter-spacing: 0.03em;
+        width: 100%;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        transition: border-color 0.2s;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: rgba(232, 160, 32, 0.5);
+        box-shadow: 0 0 0 2px rgba(232, 160, 32, 0.12);
+    }
+
+    select option { background: #1a1a2a; }
+
+    .controls {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 14px 10px;
+        height: 100%;
+        flex-shrink: 0;
+    }
+
+    audio { display: none; }
+
+    webaudio-knob { cursor: pointer; position: relative; }
+
+    #knobVolume::after, #knobPan::after, #knobSpeed::after {
+        position: absolute;
+        bottom: -16px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-family: 'Space Mono', monospace;
+        font-size: 8px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(237, 233, 224, 0.3);
+        pointer-events: none;
+    }
+
+    #knobVolume::after { content: "VOL"; }
+    #knobPan::after    { content: "PAN"; }
+    #knobSpeed::after  { content: "SPD"; }
+`);
+
+const html = /* html */`
+<div id="container">
+    <div id="playerContainer">
+        <div id="coverWrapper">
+            <img id="coverImage" src="" alt="Track Cover">
+        </div>
+        <div id="trackInfo">
+            <select id="trackSelect">
+                <option value="" disabled selected>Select a track...</option>
+            </select>
+            <span id="trackArtist">Artiste</span>
+        </div>
+        <webaudio-switch
+            src="./components/images/S_pinkponk-ON-OFF.png"
+            id="sw1" type="toggle" width="60" height="40">
+        </webaudio-switch>
+        <audio id="myplayer" controls></audio>
+    </div>
+    <div class="controls">
+        <webaudio-knob
+            id="knobVolume" src="./components/images/707.png"
+            width=34 height=128 sprites=98 min=0 max=1 step=0.01 value=0.5>
+        </webaudio-knob>
+        <webaudio-knob
+            id="knobPan" src="./components/images/707.png"
+            width=34 height=128 sprites=98 min=-1 max=1 step=0.01 value=0>
+        </webaudio-knob>
+        <webaudio-knob
+            id="knobSpeed" src="./components/images/707.png"
+            width=34 height=128 sprites=98 min=0.1 max=2 step=0.01 value=1>
+        </webaudio-knob>
+    </div>
+</div>
+`;
+
 class MyAudioPlayer extends ConnectableComponent {
     constructor() {
         super();
@@ -125,7 +324,7 @@ class MyAudioPlayer extends ConnectableComponent {
         // Reset Progress Ring
         const coverWrapper = this.shadowRoot.querySelector('#coverWrapper');
         if(coverWrapper) {
-            coverWrapper.style.background = `conic-gradient(#ccc 0%, #ccc 0%)`; 
+            coverWrapper.style.background = `conic-gradient(#1a1a2a 0%, #1a1a2a 0%)`;
         }
 
         audioElement.pause();
@@ -173,7 +372,7 @@ class MyAudioPlayer extends ConnectableComponent {
             if (audioElement.duration && coverWrapper) {
                 const progress = (audioElement.currentTime / audioElement.duration) * 100;
                 // Couleur vive pour la progression (#ff5500), couleur sombre pour le reste (#333)
-                coverWrapper.style.background = `conic-gradient(#ff5500 ${progress}%, #333 ${progress}%)`;
+                coverWrapper.style.background = `conic-gradient(#e8a020 ${progress}%, #1a1a2a ${progress}%)`;
             }
         });
 
@@ -234,183 +433,8 @@ if (coverWrapper) {
     }
 
     render() {
-        this.shadowRoot.setHTMLUnsafe(`
-        <style>
-            * {
-                box-sizing: border-box;
-            }
-            #container {
-                height: 300px; /* Augmenté légèrement pour accommoder le texte */
-                min-width: 400px;
-                background-color: #3D68CC;
-                color: white;
-                font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                padding: 10px;
-                border-radius: 12px;
-                box-shadow: 0 10px 25px rgba(61, 104, 204, 0.4);
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                gap: 10px;
-                margin: 0 auto;
-            }
-
-            /* --- Track Selector Styles --- */
-            
-            /* Wrapper pour le cercle de progression */
-            #coverWrapper {
-                width: 160px;
-                height: 160px;
-                border-radius: 50%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background: #333; 
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                cursor: pointer; /* Add this to show it's clickable */
-            }
-
-            #coverImage { 
-                width: 150px; /* Légèrement plus petit que le wrapper pour voir la bordure */
-                height: 150px; 
-                border-radius: 50%;
-                object-fit: cover;
-                border: 2px solid #333; /* Petit bord interne */
-                transition: transform 0.5s ease;
-                transform: rotate(0deg);
-                z-index: 2;
-            }
-
-            #coverImage.playing {
-                animation: rotate 10s linear infinite;
-            }
-
-            @keyframes rotate {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-
-            /* Styles du texte Titre/Artiste */
-            #trackInfo {
-                text-align: center;
-                width: 100%;
-            }
-            #trackTitle {
-                font-size: 1.1em;
-                font-weight: bold;
-                display: block;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                max-width: 250px;
-            }
-            #trackArtist {
-                font-size: 0.9em;
-                color: rgba(255, 255, 255, 0.8);
-                display: block;
-            }
-
-            select { 
-                border-radius: 4px; 
-                width: 100%; 
-                max-width: 280px;
-            }
-
-            /* --- Controls Section --- */
-            .controls {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                align-items: center;
-                flex-direction: row;
-                gap: 15px;
-                background: rgba(0, 0, 0, 0.15);
-                padding: 10px;
-                border-radius: 8px;
-                width: 100%;
-                height: 100%;
-            }
-
-            audio {
-                display: none;
-            }
-
-            /* Knobs Styling */
-            webaudio-knob {
-                position: relative;
-                cursor: pointer;
-            }
-
-            #knobVolume::after, #knobPan::after, #knobSpeed::after {
-                position: absolute;
-                bottom: -18px;
-                left: 0;
-                width: 100%;
-                text-align: center;
-                color: rgba(255, 255, 255, 0.9);
-                pointer-events: none;
-                font-size: 11px;
-                background: rgba(0, 0, 0, 0.3);
-                padding: 3px 0;
-                border-radius: 4px;
-                margin-top: 4px;
-            }
-
-            #knobVolume::after { content: "Vol"; }
-            #knobPan::after    { content: "Pan"; }
-            #knobSpeed::after  { content: "Speed"; }
-
-            #playerContainer {
-                background: rgba(0, 0, 0, 0.15);
-                padding: 10px;
-                border-radius: 8px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-                height: 100%;
-            }
-        </style>
-
-        <div id="container">
-            <div id="playerContainer">
-                <div id="coverWrapper">
-                    <img id="coverImage" src="" alt="Track Cover">
-                </div>
-
-                <div id="trackInfo">
-                    
-                <select id="trackSelect">
-                    <option value="" disabled selected>Select a track...</option>
-                </select>
-                    <span id="trackArtist">Artiste</span>
-                </div>
-
-                <webaudio-switch
-                    src="./components/images/S_pinkponk-ON-OFF.png"
-                    id="sw1" type="toggle" width="60" height="40">
-                </webaudio-switch>
-                <audio id="myplayer" controls></audio>
-            </div>
-            
-            <div class="controls">
-                <webaudio-knob 
-                    id="knobVolume" src="./components/images/707.png" 
-                    width=34 height=128 sprites=98 min=0 max=1 step=0.01 value=0.5>
-                </webaudio-knob>
-
-                <webaudio-knob 
-                    id="knobPan" src="./components/images/707.png" 
-                    width=34 height=128 sprites=98 min=-1 max=1 step=0.01 value=0>
-                </webaudio-knob>
-
-                <webaudio-knob 
-                    id="knobSpeed" src="./components/images/707.png" 
-                    width=34 height=128 sprites=98 min=0.1 max=2 step=0.01 value=1>
-                </webaudio-knob>
-            </div>
-        </div>
-        `);
+        this.shadowRoot.adoptedStyleSheets = [sheet];
+        this.shadowRoot.setHTMLUnsafe(html);
     }
 }
 

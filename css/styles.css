@@ -1,33 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700&display=swap');
+
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 10px;
-    background-color: #060325;
+    font-family: 'Barlow Condensed', sans-serif;
+    background-color: #08080f;
+    background-image:
+        radial-gradient(ellipse at 15% 50%, rgba(40, 70, 180, 0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(220, 150, 20, 0.05) 0%, transparent 50%);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 24px;
+    color: #ede9e0;
+}
+
+header {
+    width: 100%;
+    max-width: 860px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+header .indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #e8a020;
+    box-shadow: 0 0 10px #e8a020, 0 0 20px rgba(232, 160, 32, 0.4);
+    animation: blink 2.4s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+header h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(237, 233, 224, 0.35);
 }
 
 main {
     display: grid;
-    /* On définit des colonnes qui s'adaptent au contenu ou ont une taille fixe */
     grid-template-columns: repeat(2, max-content);
-    gap: 20px;
-    grid-template-rows: auto auto auto;
-    /* Centre la grille entière dans la page */
+    gap: 12px;
     justify-content: center;
-    /* Centre les éléments à l'intérieur de leurs cellules (optionnel si max-content) */
-    align-items: center;
+    align-items: start;
     width: 100%;
-    height: 100%;
 }
 
-/* responsive */
 @media (max-width: 900px) {
     main {
         grid-template-columns: 1fr;

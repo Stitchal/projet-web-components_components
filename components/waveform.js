@@ -1,34 +1,41 @@
 import "./libs/webaudiocontrols.js";
 import { ConnectableComponent } from "./ConnectableComponent.js";
 
-const style = `
-<style>
-    * {
-      box-sizing: border-box;
-    }
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(/* css */`
+    * { box-sizing: border-box; }
 
     canvas {
-        background-color: #f0f0f0;
-        border-radius: 6px;
+        border-radius: 8px;
         width: 100%;
         height: 100%;
+        display: block;
     }
+
     #container {
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        background-color: #ffffff; /* Requested Primary Color */
+        font-family: 'Barlow Condensed', sans-serif;
+        background: #11111c;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-top-color: rgba(255, 255, 255, 0.12);
         padding: 10px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(61, 104, 204, 0.4);
-        margin: 0 auto;
-        color: white;
+        border-radius: 14px;
         height: 300px;
-        width: 400px;
+        width: 420px;
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
+        overflow: hidden;
     }
-</style>
-`;
+
+    #container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 20%; right: 20%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+`);
 
 const html = `
     <div id="container">
@@ -51,7 +58,8 @@ class Waveform extends ConnectableComponent {
     }
 
     connectedCallback() {
-        this.shadowRoot.setHTMLUnsafe(style + html);
+        this.shadowRoot.adoptedStyleSheets = [sheet];
+        this.shadowRoot.setHTMLUnsafe(html);
         this.canvas = this.shadowRoot.querySelector("#myCanvas");
         this.width = this.canvas.width;
         this.height = this.canvas.height;
@@ -84,16 +92,18 @@ class Waveform extends ConnectableComponent {
             requestAnimationFrame(() => this.visualize());
             return;
     }
-        // clear the canvas 
+        // clear the canvas
         this.canvasContext.clearRect(0, 0, this.width, this.height);
-        this.canvasContext.fillStyle = '#333333';
+        this.canvasContext.fillStyle = '#0c0c16';
         this.canvasContext.fillRect(0, 0, this.width, this.height);
 
         // Get the analyser data
         this.analyser.getByteTimeDomainData(this.dataArray);
 
-        this.canvasContext.lineWidth = 1.1;
-        this.canvasContext.strokeStyle = '#9dafd8';
+        this.canvasContext.lineWidth = 1.5;
+        this.canvasContext.strokeStyle = '#39e082';
+        this.canvasContext.shadowBlur = 8;
+        this.canvasContext.shadowColor = 'rgba(57, 224, 130, 0.5)';
 
         // We will draw it as a path of connected lines
         // First, clear the previous path that was in the buffer
@@ -117,6 +127,7 @@ class Waveform extends ConnectableComponent {
 
         // draw the whole waveform (a path)
         this.canvasContext.stroke();
+        this.canvasContext.shadowBlur = 0;
 
         // call again the visualize function at 60 frames/s
         requestAnimationFrame(() => this.visualize());

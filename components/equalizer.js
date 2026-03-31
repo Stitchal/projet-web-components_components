@@ -1,57 +1,64 @@
 import "./libs/webaudiocontrols.js";
 import { ConnectableComponent } from "./ConnectableComponent.js";
 
-const style = `
-<style>
-    /* Main Chassis */
-    * {
-      box-sizing: border-box;
-    }
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(/* css */`
+    * { box-sizing: border-box; }
+
     #container {
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        background-color: #3D68CC; /* Requested Primary Color */
-        padding: 10px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(61, 104, 204, 0.4);
-        margin: 0 auto;
-        color: white;
+        font-family: 'Barlow Condensed', sans-serif;
+        background: #11111c;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-top-color: rgba(255, 255, 255, 0.12);
+        padding: 12px;
+        border-radius: 14px;
+        color: #ede9e0;
         height: 300px;
-        width: 400px;
+        width: 420px;
+        position: relative;
+        overflow: hidden;
     }
 
-    /* Inner Control Surface */
+    #container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 20%; right: 20%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+
     .eq-controls {
-        background: rgba(0, 0, 0, 0.15); /* Slight darkening for contrast */
-        padding: 20px 10px 10px 10px;
-        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 18px 10px 12px;
+        border-radius: 10px;
         display: flex;
         flex-direction: row;
-        gap: 5px;
+        gap: 4px;
         height: 100%;
         justify-content: center;
         align-items: center;
     }
 
-    /* Individual Knob Column */
     .control-row {
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 70px;
-        position: relative; /* Needed for the frequency label placement */
+        width: 60px;
+        position: relative;
     }
 
-    /* Injecting Frequency Labels (Since input-range is hidden) */
     .control-row::before {
         content: '';
-        font-size: 11px;
-        font-weight: 600;
-        opacity: 0.8;
-        margin-bottom: 5px;
+        font-family: 'Space Mono', monospace;
+        font-size: 8px;
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        color: rgba(237, 233, 224, 0.3);
+        margin-bottom: 6px;
         text-transform: uppercase;
     }
 
-    /* Assigning specific labels to specific columns */
     .control-row:nth-child(1)::before { content: "60Hz"; }
     .control-row:nth-child(2)::before { content: "170Hz"; }
     .control-row:nth-child(3)::before { content: "350Hz"; }
@@ -59,31 +66,36 @@ const style = `
     .control-row:nth-child(5)::before { content: "3.5kHz"; }
     .control-row:nth-child(6)::before { content: "10kHz"; }
 
-    /* The Knobs */
     .control-row webaudio-knob {
-        margin: 5px 0;
+        margin: 4px 0;
         cursor: pointer;
     }
 
-    /* The dB Value Text */
     .knob-value {
-        font-size: 11px;
-        font-weight: normal;
-        background: rgba(0, 0, 0, 0.3);
-        padding: 3px 8px;
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        color: rgba(237, 233, 224, 0.4);
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 3px 6px;
         border-radius: 4px;
-        margin-top: 5px;
+        margin-top: 4px;
         min-width: 40px;
         text-align: center;
+        letter-spacing: 0.04em;
+        transition: color 0.2s;
     }
 
-    /* Hiding the requested section */
+    .knob-value.active {
+        color: #e8a020;
+        border-color: rgba(232, 160, 32, 0.3);
+    }
+
     .input-range,
     div[class="input-range"] {
         display: none !important;
     }
-</style>
-`;
+`);
 
 const html = `
 <div id="container">
@@ -176,9 +188,8 @@ class Equalizer extends ConnectableComponent {
   }
 
   connectedCallback() {
-    // appelé lorsque le composant est ajouté au DOM
-    // On crée l'interface utilisateur
-    this.shadowRoot.setHTMLUnsafe(style + html);
+    this.shadowRoot.adoptedStyleSheets = [sheet];
+    this.shadowRoot.setHTMLUnsafe(html);
 
     // on n'a pas encore l'AudioContext, on l'obtiendra via setAudioContext()
     // on ne peut pas encore configurer le graphe audio
@@ -237,6 +248,7 @@ class Equalizer extends ConnectableComponent {
           slider.value = value;
           if (valueDisplay) {
             valueDisplay.textContent = value.toFixed(1) + " dB";
+            valueDisplay.classList.toggle('active', value !== 0);
           }
           slider.dispatchEvent(new Event('input')); // Trigger input event to update filter
         });
