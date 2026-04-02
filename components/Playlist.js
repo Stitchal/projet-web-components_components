@@ -2,8 +2,11 @@ const sheet = new CSSStyleSheet();
 sheet.replaceSync(/* css */`
     * { box-sizing: border-box; }
 
+    :host { display: block; width: 100%; height: 100%; }
+
     #container {
-        width: 340px;
+        width: 100%;
+        height: 100%;
         background: #11111c;
         border: 1px solid rgba(255, 255, 255, 0.07);
         border-top-color: rgba(255, 255, 255, 0.12);

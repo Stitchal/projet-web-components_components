@@ -1,5 +1,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700&display=swap');
 
+/* ── Thèmes ──────────────────────────────────────────────── */
+
+:root {
+    --bg-page:       #08080f;
+    --bg-component:  #11111c;
+    --bg-titlebar:   #17172a;
+    --bg-input:      rgba(255,255,255,0.04);
+    --border:        rgba(255, 255, 255, 0.07);
+    --border-top:    rgba(255, 255, 255, 0.12);
+    --text:          #ede9e0;
+    --text-dim:      rgba(237, 233, 224, 0.38);
+    --text-faint:    rgba(237, 233, 224, 0.3);
+    --accent:        #e8a020;
+    --accent-glow:   rgba(232, 160, 32, 0.7);
+    --accent-bg:     rgba(232, 160, 32, 0.08);
+    --btn-hover-bg:  rgba(232, 160, 32, 0.15);
+    --btn-hover-border: rgba(232, 160, 32, 0.4);
+    --ring-bg:       #1a1a2a;
+    --cover-border:  #0d0d17;
+}
+
+:root.light {
+    --bg-page:       #f0ede8;
+    --bg-component:  #ffffff;
+    --bg-titlebar:   #e8e4dc;
+    --bg-input:      rgba(0,0,0,0.04);
+    --border:        rgba(0, 0, 0, 0.1);
+    --border-top:    rgba(0, 0, 0, 0.15);
+    --text:          #1a1612;
+    --text-dim:      rgba(26, 22, 18, 0.5);
+    --text-faint:    rgba(26, 22, 18, 0.35);
+    --accent:        #c87800;
+    --accent-glow:   rgba(200, 120, 0, 0.5);
+    --accent-bg:     rgba(200, 120, 0, 0.08);
+    --btn-hover-bg:  rgba(200, 120, 0, 0.12);
+    --btn-hover-border: rgba(200, 120, 0, 0.4);
+    --ring-bg:       #ddd8d0;
+    --cover-border:  #c8c0b4;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -8,13 +48,40 @@
 
 body {
     font-family: 'Barlow Condensed', sans-serif;
-    background-color: #08080f;
+    background-color: var(--bg-page);
     background-image:
         radial-gradient(ellipse at 15% 50%, rgba(40, 70, 180, 0.07) 0%, transparent 55%),
         radial-gradient(ellipse at 85% 20%, rgba(220, 150, 20, 0.05) 0%, transparent 50%);
     min-height: 100vh;
-    color: #ede9e0;
+    color: var(--text);
     overflow: hidden;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* ── Bouton thème ────────────────────────────────────────── */
+
+#theme-toggle {
+    position: fixed;
+    top: 10px;
+    right: 14px;
+    z-index: 9999;
+    background: var(--bg-titlebar);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
+}
+
+#theme-toggle:hover {
+    background: var(--btn-hover-bg);
+    border-color: var(--btn-hover-border);
+    color: var(--accent);
 }
 
 /* ── Arène de drag ───────────────────────────────────────── */
@@ -33,13 +100,56 @@ main {
     display: inline-flex;
     flex-direction: column;
     user-select: none;
+    overflow: hidden;
+}
+
+.window > :not(.titlebar):not(.resize-handle) {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: block;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    cursor: nwse-resize;
+    z-index: 10;
+}
+
+[data-resize="x"] .resize-handle {
+    cursor: ew-resize;
+    height: 100%;
+}
+
+.resize-handle::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid rgba(237, 233, 224, 0.2);
+    border-bottom: 2px solid rgba(237, 233, 224, 0.2);
+    border-radius: 1px;
+}
+
+.window:hover .resize-handle::after {
+    border-color: rgba(237, 233, 224, 0.45);
+}
+
+.window.collapsed .resize-handle {
+    display: none;
 }
 
 .titlebar {
     height: 22px;
-    background: #17172a;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+    background: var(--bg-titlebar);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 14px 14px 0 0;
     padding: 0 10px;
     display: flex;
@@ -49,21 +159,101 @@ main {
     font-family: 'Space Mono', monospace;
     font-size: 8px;
     letter-spacing: 0.2em;
-    color: rgba(237, 233, 224, 0.3);
+    color: var(--text-faint);
     text-transform: uppercase;
+    transition: background 0.3s, color 0.3s;
 }
 
 .titlebar:active {
     cursor: grabbing;
 }
 
-.titlebar-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #e8a020;
-    box-shadow: 0 0 5px rgba(232, 160, 32, 0.7);
+.window.collapsed .titlebar {
+    border-radius: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.window.collapsed > :not(.titlebar) {
+    display: none !important;
+}
+
+/* ── Boutons macOS ───────────────────────────────────────────── */
+
+.titlebar-dot { display: none; }
+
+.titlebar-controls {
+    display: flex;
+    gap: 5px;
+    align-items: center;
     flex-shrink: 0;
+}
+
+.titlebar-btn {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.titlebar-btn::after {
+    content: '';
+    position: absolute;
+    font-size: 8px;
+    line-height: 1;
+    font-weight: 700;
+    color: rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.1s;
+    font-family: sans-serif;
+}
+
+.titlebar:hover .titlebar-btn::after {
+    opacity: 1;
+}
+
+.titlebar-btn-close {
+    background: #ff5f57;
+    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2);
+}
+
+.titlebar-btn-close::after {
+    content: '×';
+}
+
+.titlebar-btn-min {
+    background: #febc2e;
+    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2);
+}
+
+.titlebar-btn-min::after {
+    content: '−';
+}
+
+.titlebar-btn-max {
+    background: #28c840;
+    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2);
+}
+
+.titlebar-btn-max::after {
+    content: '+';
+}
+
+.window:not(:hover) .titlebar-btn {
+    background: #3a3a4a !important;
+    box-shadow: none;
+}
+
+.window.collapsed .titlebar-btn-close,
+.window.collapsed .titlebar-btn-min {
+    pointer-events: none;
+    opacity: 0.3;
 }
 
 /* ── Fenêtre WAM ─────────────────────────────────────────── */
@@ -75,7 +265,7 @@ main {
     margin-left: auto;
     font-size: 8px;
     letter-spacing: 0.1em;
-    color: rgba(237, 233, 224, 0.4);
+    color: var(--text-dim);
     cursor: default;
     user-select: none;
 }
@@ -85,7 +275,7 @@ main {
     appearance: none;
     width: 70px;
     height: 3px;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--border);
     border-radius: 2px;
     outline: none;
     cursor: pointer;
@@ -97,15 +287,15 @@ main {
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: #e8a020;
-    box-shadow: 0 0 4px rgba(232, 160, 32, 0.6);
+    background: var(--accent);
+    box-shadow: 0 0 4px var(--accent-glow);
     cursor: pointer;
 }
 
 #wam-volume-display {
     min-width: 30px;
     text-align: right;
-    color: rgba(237, 233, 224, 0.4);
+    color: var(--text-dim);
 }
 
 #win-wam {
@@ -116,8 +306,8 @@ main {
 }
 
 .wam-container {
-    background: #11111c;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: var(--bg-component);
+    border: 1px solid var(--border);
     border-top: none;
     border-radius: 0 0 14px 14px;
     overflow-y: auto;

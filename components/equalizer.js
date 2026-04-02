@@ -10,15 +10,17 @@ const sheet = new CSSStyleSheet();
 sheet.replaceSync(/* css */`
     * { box-sizing: border-box; }
 
+    :host { display: block; width: 100%; height: 100%; }
+
     #container {
         font-family: 'Barlow Condensed', sans-serif;
-        background: #11111c;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-top-color: rgba(255, 255, 255, 0.12);
+        background: var(--bg-component, #11111c);
+        border: 1px solid var(--border, rgba(255,255,255,0.07));
+        border-top-color: var(--border-top, rgba(255,255,255,0.12));
         padding: 10px;
         border-radius: 14px;
-        color: #ede9e0;
-        width: 300px;
+        color: var(--text, #ede9e0);
+        width: 100%;
         position: relative;
         overflow: hidden;
     }
@@ -77,9 +79,9 @@ sheet.replaceSync(/* css */`
     .knob-value {
         font-family: 'Space Mono', monospace;
         font-size: 9px;
-        color: rgba(237, 233, 224, 0.4);
+        color: var(--text-dim, rgba(237,233,224,0.4));
         background: rgba(0, 0, 0, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border, rgba(255,255,255,0.06));
         padding: 3px 6px;
         border-radius: 4px;
         margin-top: 4px;
@@ -90,8 +92,38 @@ sheet.replaceSync(/* css */`
     }
 
     .knob-value.active {
-        color: #e8a020;
+        color: var(--accent, #e8a020);
         border-color: rgba(232, 160, 32, 0.3);
+    }
+
+    /* ── Préréglages ── */
+    #presets {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border, rgba(255,255,255,0.05));
+        margin-bottom: 4px;
+    }
+
+    .preset-btn {
+        background: var(--bg-input, rgba(255,255,255,0.04));
+        border: 1px solid var(--border, rgba(255,255,255,0.1));
+        border-radius: 5px;
+        color: var(--text-dim, rgba(237,233,224,0.6));
+        cursor: pointer;
+        padding: 3px 8px;
+        font-family: 'Space Mono', monospace;
+        font-size: 8px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .preset-btn:hover, .preset-btn.active {
+        background: var(--btn-hover-bg, rgba(232,160,32,0.15));
+        border-color: var(--btn-hover-border, rgba(232,160,32,0.4));
+        color: var(--accent, #e8a020);
     }
 
     .input-range,
@@ -103,6 +135,15 @@ sheet.replaceSync(/* css */`
 // BASE est calculé au niveau module — interpolation correcte même en usage distant.
 const html = /* html */`
 <div id="container">
+    <div id="presets">
+        <button class="preset-btn active" data-preset="0,0,0,0,0,0">Flat</button>
+        <button class="preset-btn" data-preset="5,4,2,0,-1,-2">Bass</button>
+        <button class="preset-btn" data-preset="-2,0,2,4,3,1">Treble</button>
+        <button class="preset-btn" data-preset="4,3,0,-2,2,3">Rock</button>
+        <button class="preset-btn" data-preset="3,2,0,1,3,4">Pop</button>
+        <button class="preset-btn" data-preset="2,0,-1,0,2,4">Jazz</button>
+        <button class="preset-btn" data-preset="0,0,0,0,-3,-5">Vocal</button>
+    </div>
     <div class="eq-controls">
         <div class="control-row">
             <webaudio-knob id="knobEq0" src="${BASE}images/707.png"
@@ -269,6 +310,15 @@ class Equalizer extends ConnectableComponent {
                 }
             }, { signal });
         }
+
+        // Presets
+        this.shadowRoot.querySelector('#presets')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.preset-btn');
+            if (!btn) return;
+            this.#applyPreset(btn.dataset.preset);
+            this.shadowRoot.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }, { signal });
     }
 }
 

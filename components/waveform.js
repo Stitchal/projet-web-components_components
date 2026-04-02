@@ -4,6 +4,8 @@ const sheet = new CSSStyleSheet();
 sheet.replaceSync(/* css */`
     * { box-sizing: border-box; }
 
+    :host { display: block; width: 100%; height: 100%; }
+
     canvas {
         border-radius: 8px;
         width: 100%;
@@ -18,8 +20,8 @@ sheet.replaceSync(/* css */`
         border-top-color: rgba(255, 255, 255, 0.12);
         padding: 10px;
         border-radius: 14px;
-        height: 300px;
-        width: 420px;
+        height: 100%;
+        width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
