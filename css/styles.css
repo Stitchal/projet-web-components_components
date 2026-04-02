@@ -112,6 +112,7 @@ main {
     max-height: calc(100vh - 80px);
     display: inline-flex;
     flex-direction: column;
+    width: 600px;
 }
 
 .wam-container {
@@ -122,4 +123,10 @@ main {
     overflow-y: auto;
     flex: 1;
     min-height: 0;
+}
+
+.wam-container wam-host,
+.wam-container wam-plugin {
+    display: block;
+    width: 100%;
 }
