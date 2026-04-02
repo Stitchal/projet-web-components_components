@@ -1,5 +1,17 @@
 # History
 
+## [2026-04-02] — Split my-audio-player en AudioPlayer + Playlist
+
+- **Fichiers modifiés** : `components/AudioPlayer.js` (nouveau), `components/Playlist.js` (nouveau), `index.html`, `js/script.js`
+- **Fichiers supprimés** : `components/audioplayer.js`
+- **Type** : `refactor`
+- **Description** : Séparation du monolithe `audioplayer.js` en deux Web Components autonomes. `AudioPlayer` gère le graphe audio, les contrôles (cover, play/pause, prev/next, knobs VOL/PAN/SPD) et l'anneau de progression. `Playlist` gère l'affichage de la liste, les durées, le drag & drop et la durée totale. Communication via `track-changed` (player → playlist) et `track-select` (playlist → player) sur `document`.
+- **Raison** : Séparation des responsabilités — deux fenêtres draggables indépendantes, meilleure lisibilité et réutilisabilité de chaque composant.
+- **Skills appliqués** : `web-components`
+- **Décisions de design** : `tracks` transmis dans chaque `track-changed` pour que la playlist puisse se reconstruire en cas de changement de `src`. La playlist n'a pas de graphe audio (`extends HTMLElement`). Le drag & drop reste dans la playlist ; après réordonnancement, la playlist émet `track-select` pour le prochain clic utilisateur — la lecture en cours n'est pas interrompue.
+
+---
+
 ## [2026-04-02] — Playlist : durées, drag & drop, durée totale
 
 - **Fichiers modifiés** : `components/audioplayer.js`

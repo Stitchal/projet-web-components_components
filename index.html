@@ -30,7 +30,8 @@
         <my-eq preset="-6,0,3,3,0,-3"></my-eq>
         <my-waveform color="#e8a020" fft-size="2048"></my-waveform>
     -->
-    <script src="./components/audioplayer.js" type="module"></script>
+    <script src="./components/AudioPlayer.js" type="module"></script>
+    <script src="./components/Playlist.js" type="module"></script>
     <script src="./components/equalizer.js" type="module"></script>
     <script src="./components/waveform.js" type="module"></script>
     <script type="module" src="https://mainline.i3s.unice.fr/wam_wc/wam-host/wamHost.js"></script>
@@ -45,10 +46,6 @@
 </head>
 
 <body>
-    <header>
-        <span class="indicator"></span>
-        <h1>Studio — Lecteur Audio</h1>
-    </header>
     <main>
         <div class="window" id="win-player">
             <div class="titlebar"><span class="titlebar-dot"></span>PLAYER</div>
@@ -57,6 +54,10 @@
               autoplay : présence de l'attribut → lecture automatique
             -->
             <my-audio-player id="player" src="./assets/tracks.json"></my-audio-player>
+        </div>
+        <div class="window" id="win-playlist">
+            <div class="titlebar"><span class="titlebar-dot"></span>PLAYLIST</div>
+            <my-playlist id="playlist"></my-playlist>
         </div>
         <div class="window" id="win-eq">
             <div class="titlebar"><span class="titlebar-dot"></span>EQUALIZER</div>
