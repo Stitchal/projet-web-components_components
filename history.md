@@ -1,5 +1,16 @@
 # History
 
+## [2026-04-02] — Playlist : durées, drag & drop, durée totale
+
+- **Fichiers modifiés** : `components/audioplayer.js`
+- **Type** : `feature`
+- **Description** : Ajout du chargement asynchrone des durées audio (parallel `Promise.all` via `new Audio()` + `loadedmetadata`), colonne `MM:SS` par piste, pied de playlist `TOTAL —`, drag & drop HTML5 natif pour réordonner la file avec mise à jour correcte de `#currentIndex`.
+- **Raison** : Amélioration UX — visibilité des durées de chaque morceau et réorganisation manuelle de la file de lecture sans interrompre la lecture en cours.
+- **Skills appliqués** : `web-components`, `frontend-design`
+- **Décisions de design** : Durées chargées automatiquement (pas de champ JSON manuel). Guard `#loadGeneration` pour éviter des écritures stale si `src` change pendant le chargement. `#rebuildPlaylistDOM()` dissocié de `#selectTrack()` pour ne pas interrompre la lecture lors du réordonnancement. Helper `#createPlaylistItem()` extrait pour partager la construction DOM entre build et rebuild.
+
+---
+
 ## [2026-04-02] — Contrôle du volume du piano (wam-host)
 
 - **Fichiers modifiés** : `index.html`, `js/script.js`, `css/styles.css`
