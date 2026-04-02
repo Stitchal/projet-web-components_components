@@ -46,8 +46,9 @@
 </head>
 
 <body>
+    <button id="theme-toggle">☀ Light</button>
     <main>
-        <div class="window" id="win-player">
+        <div class="window" id="win-player" data-no-resize>
             <div class="titlebar"><span class="titlebar-dot"></span>PLAYER</div>
             <!--
               src : URL du JSON de playlist (défaut : assets/tracks.json relatif au composant)
@@ -59,7 +60,7 @@
             <div class="titlebar"><span class="titlebar-dot"></span>PLAYLIST</div>
             <my-playlist id="playlist"></my-playlist>
         </div>
-        <div class="window" id="win-eq">
+        <div class="window" id="win-eq" data-no-resize>
             <div class="titlebar"><span class="titlebar-dot"></span>EQUALIZER</div>
             <!--
               preset : gains dB séparés par virgule pour les 6 bandes
@@ -77,7 +78,7 @@
             <my-waveform id="waveform" color="#39e082" fft-size="1024"></my-waveform>
         </div>
         <!-- <my-butterchurn id="butterchurn"></my-butterchurn> -->
-        <div class="window" id="win-wam">
+        <div class="window" id="win-wam" data-resize="x">
             <div class="titlebar">
                 <span class="titlebar-dot"></span>PIANO
                 <label class="wam-volume-label">
