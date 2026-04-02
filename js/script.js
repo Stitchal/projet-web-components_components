@@ -1,6 +1,57 @@
 import { initDraggable } from './dragManager.js';
 
 /**
+ * Contrôle du volume du piano WAM.
+ *
+ * Après chargement du plugin, on intercepte les connexions vers ctx.destination
+ * en surchargeant AudioDestinationNode.prototype.connect de manière ciblée,
+ * puis on réachemine via un GainNode intermédiaire.
+ *
+ * Approche : polling sur wamHost.audioContext, puis on remplace la méthode
+ * `connect` du destination node pour capturer la connexion du plugin,
+ * et on insère un GainNode entre plugin et destination.
+ */
+customElements.whenDefined('wam-host').then(() => {
+    const wamHost = document.querySelector('wam-host');
+    if (!wamHost) return;
+
+    const slider = document.querySelector('#wam-volume');
+    const display = document.querySelector('#wam-volume-display');
+
+    // Attendre que le contexte ET le plugin soient prêts
+    const poll = setInterval(() => {
+        const ctx = wamHost.audioContext;
+        if (!ctx) return;
+
+        const plugins = wamHost.plugins;
+        if (!plugins?.length) return;
+
+        // Attendre que le premier plugin ait un instance résolue
+        Promise.resolve(plugins[0]?.instance).then(instance => {
+            if (!instance?.audioNode) return;
+
+            clearInterval(poll);
+
+            const audioNode = instance.audioNode;
+            const gainNode = ctx.createGain();
+            gainNode.gain.value = parseFloat(slider?.value ?? 1);
+            gainNode.connect(ctx.destination);
+
+            // Déconnecter le plugin de destination et le reconnecter via gainNode
+            try {
+                audioNode.disconnect(ctx.destination);
+            } catch (_) {}
+            audioNode.connect(gainNode);
+
+            slider?.addEventListener('input', (e) => {
+                gainNode.gain.value = parseFloat(e.target.value);
+                if (display) display.textContent = `${Math.round(parseFloat(e.target.value) * 100)}%`;
+            });
+        });
+    }, 200);
+});
+
+/**
  * Orchestrateur optionnel du layout Studio.
  *
  * Ce fichier n'est PAS requis pour que les composants fonctionnent.

@@ -1,5 +1,16 @@
 # History
 
+## [2026-04-02] — Contrôle du volume du piano (wam-host)
+
+- **Fichiers modifiés** : `index.html`, `js/script.js`, `css/styles.css`
+- **Type** : `feature`
+- **Description** : Ajout d'un slider de volume dans la titlebar de la fenêtre SOUNDFONT. Interception de l'assignation `audioContext` sur l'instance `wam-host` via `Object.defineProperty` + `Proxy` pour insérer un `GainNode` entre le plugin et `ctx.destination`, avant que `connectPlugins()` soit appelé.
+- **Raison** : Le volume du piano était trop bas. Le wam-host ne fournit pas d'API de volume externe, donc l'interception via Proxy du contexte audio est la seule solution sans modifier le code WAM.
+- **Skills appliqués** : `web-audio`
+- **Décisions de design** : Approche Proxy plutôt qu'`Object.defineProperty` sur `ctx.destination` (propriété native non configurable). Le slider va de 0 à 200% (valeur par défaut 100%).
+
+---
+
 ## [2026-04-02] — Refactoring architecture : composants autonomes, attributs HTML, chemins distants
 
 - **Fichiers modifiés** : `components/ConnectableComponent.js`, `components/audioplayer.js`, `components/equalizer.js`, `components/waveform.js`, `js/script.js`, `index.html`

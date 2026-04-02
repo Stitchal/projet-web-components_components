@@ -8,6 +8,7 @@ export function initDraggable(windows) {
     win.addEventListener('mousedown', () => bringToFront(win, windows), true);
 
     handle.addEventListener('mousedown', e => {
+      if (e.target.closest('input, button, select')) return;
       e.preventDefault();
 
       const startMouseX = e.clientX;
