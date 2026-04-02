@@ -1,5 +1,38 @@
 import { initDraggable } from './dragManager.js';
 
+// ── Plein écran ──────────────────────────────────────────────
+const fsBtn = document.querySelector('#fullscreen-btn');
+fsBtn?.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        fsBtn.textContent = '✕';
+        fsBtn.title = 'Quitter le plein écran';
+    } else {
+        document.exitFullscreen().catch(() => {});
+    }
+});
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) {
+        fsBtn.textContent = '⛶';
+        fsBtn.title = 'Plein écran';
+    }
+});
+
+
+// Doit être enregistré immédiatement — track-changed est émis dès le
+// chargement des pistes, avant window.onload.
+const bg = document.querySelector('#bg');
+document.addEventListener('track-changed', (e) => {
+    const cover = e.detail?.track?.cover;
+    if (!bg) return;
+    if (cover) {
+        bg.style.backgroundImage = `url('${cover}')`;
+        bg.classList.add('has-cover');
+    } else {
+        bg.classList.remove('has-cover');
+    }
+});
+
 /**
  * Contrôle du volume du piano WAM.
  *
@@ -78,14 +111,6 @@ window.onload = async () => {
     player.connectComponent(eq);
     eq.connectComponent(waveform);
 
-    // ── Thème clair/sombre ───────────────────────────────────
-    const themeBtn = document.querySelector('#theme-toggle');
-    themeBtn?.addEventListener('click', () => {
-        const isLight = document.documentElement.classList.toggle('light');
-        themeBtn.textContent = isLight ? '☾ Dark' : '☀ Light';
-    });
-
-    // ── Raccourcis clavier ───────────────────────────────────
     document.addEventListener('keydown', async (e) => {
         // Ignorer si focus sur un input/textarea
         if (e.target.matches('input, textarea, select')) return;
