@@ -1,6 +1,16 @@
 # History
 
-## [2026-04-02] — Ajout d'une playlist visuelle dans `<my-audio-player>`
+## [2026-04-02] — Refonte compacte du layout `<my-audio-player>`
+
+- **Fichiers modifiés** : `components/audioplayer.js`
+- **Type** : `style`
+- **Description** : Réduction de la largeur à 340px, cover ramenée à 86px, knobs passés en colonne verticale à droite, `#playerContainer` remplacé par `#playerCenter` (pas de fond/bordure superflu). Playlist compacte avec items à 26px de hauteur.
+- **Raison** : Le composant était trop large et prenait trop de place à l'écran.
+- **Skills appliqués** : `web-components`, `frontend-design`
+
+---
+
+
 
 - **Fichiers modifiés** : `components/audioplayer.js`
 - **Type** : `feature`

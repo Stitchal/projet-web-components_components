@@ -6,17 +6,17 @@ sheet.replaceSync(/* css */`
     * { box-sizing: border-box; }
 
     #container {
-        min-width: 420px;
+        width: 340px;
         background: #11111c;
         border: 1px solid rgba(255, 255, 255, 0.07);
         border-top-color: rgba(255, 255, 255, 0.12);
         color: #ede9e0;
         font-family: 'Barlow Condensed', sans-serif;
-        padding: 14px;
+        padding: 10px;
         border-radius: 14px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
         position: relative;
         overflow: hidden;
     }
@@ -29,30 +29,31 @@ sheet.replaceSync(/* css */`
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
     }
 
+    /* ── Ligne principale : cover + infos/contrôles + knobs ── */
+
     #playerRow {
         display: flex;
         flex-direction: row;
-        align-items: center;
-        gap: 12px;
-        height: 220px;
+        align-items: stretch;
+        gap: 10px;
     }
 
     #coverWrapper {
-        width: 158px;
-        height: 158px;
+        width: 86px;
+        height: 86px;
         border-radius: 50%;
         flex-shrink: 0;
+        align-self: center;
         display: flex;
         justify-content: center;
         align-items: center;
         background: conic-gradient(#1a1a2a 0%, #1a1a2a 0%);
         cursor: pointer;
-        position: relative;
     }
 
     #coverImage {
-        width: 148px;
-        height: 148px;
+        width: 78px;
+        height: 78px;
         border-radius: 50%;
         object-fit: cover;
         border: 3px solid #0d0d17;
@@ -68,32 +69,25 @@ sheet.replaceSync(/* css */`
         to { transform: rotate(360deg); }
     }
 
-    #playerContainer {
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        padding: 12px 14px;
+    /* centre : infos + nav */
+    #playerCenter {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        height: 100%;
+        gap: 6px;
         flex: 1;
+        min-width: 0;
     }
 
     #trackInfo {
-        text-align: center;
-        width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 2px;
     }
 
     #trackTitle {
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: 600;
         letter-spacing: 0.04em;
-        display: block;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -101,29 +95,27 @@ sheet.replaceSync(/* css */`
 
     #trackArtist {
         font-family: 'Space Mono', monospace;
-        font-size: 0.65rem;
+        font-size: 0.58rem;
         letter-spacing: 0.12em;
         text-transform: uppercase;
         color: rgba(237, 233, 224, 0.38);
-        display: block;
     }
 
     #navControls {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         align-items: center;
     }
 
     .nav-btn {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
+        border-radius: 5px;
         color: rgba(237, 233, 224, 0.6);
         cursor: pointer;
-        padding: 4px 10px;
+        padding: 3px 8px;
         font-family: 'Space Mono', monospace;
-        font-size: 10px;
-        letter-spacing: 0.1em;
+        font-size: 9px;
         transition: background 0.15s, color 0.15s;
     }
 
@@ -133,17 +125,13 @@ sheet.replaceSync(/* css */`
         color: #e8a020;
     }
 
+    /* knobs verticaux à droite */
     .controls {
         display: flex;
         flex-direction: row;
-        justify-content: center;
         align-items: center;
-        gap: 15px;
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        padding: 14px 10px;
-        height: 100%;
+        justify-content: center;
+        gap: 8px;
         flex-shrink: 0;
     }
 
@@ -153,13 +141,13 @@ sheet.replaceSync(/* css */`
 
     #knobVolume::after, #knobPan::after, #knobSpeed::after {
         position: absolute;
-        bottom: -16px;
+        bottom: -13px;
         left: 0;
         width: 100%;
         text-align: center;
         font-family: 'Space Mono', monospace;
-        font-size: 8px;
-        letter-spacing: 0.12em;
+        font-size: 7px;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
         color: rgba(237, 233, 224, 0.3);
         pointer-events: none;
@@ -173,11 +161,11 @@ sheet.replaceSync(/* css */`
 
     #playlist {
         border-top: 1px solid rgba(255, 255, 255, 0.06);
-        padding-top: 8px;
+        padding-top: 6px;
         display: flex;
         flex-direction: column;
-        gap: 2px;
-        max-height: 160px;
+        gap: 1px;
+        max-height: 120px;
         overflow-y: auto;
         scrollbar-width: thin;
         scrollbar-color: rgba(255,255,255,0.1) transparent;
@@ -186,9 +174,9 @@ sheet.replaceSync(/* css */`
     .playlist-item {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 6px 8px;
-        border-radius: 7px;
+        gap: 8px;
+        padding: 4px 6px;
+        border-radius: 6px;
         cursor: pointer;
         transition: background 0.15s;
         border: 1px solid transparent;
@@ -204,69 +192,63 @@ sheet.replaceSync(/* css */`
     }
 
     .playlist-item-cover {
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
+        width: 26px;
+        height: 26px;
+        border-radius: 3px;
         object-fit: cover;
         flex-shrink: 0;
-        opacity: 0.85;
+        opacity: 0.8;
     }
 
-    .playlist-item.active .playlist-item-cover {
-        opacity: 1;
-    }
+    .playlist-item.active .playlist-item-cover { opacity: 1; }
 
     .playlist-item-info {
         display: flex;
         flex-direction: column;
         gap: 1px;
         overflow: hidden;
+        flex: 1;
     }
 
     .playlist-item-title {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        letter-spacing: 0.03em;
+        letter-spacing: 0.02em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         color: rgba(237, 233, 224, 0.9);
     }
 
-    .playlist-item.active .playlist-item-title {
-        color: #e8a020;
-    }
+    .playlist-item.active .playlist-item-title { color: #e8a020; }
 
     .playlist-item-artist {
         font-family: 'Space Mono', monospace;
-        font-size: 0.6rem;
-        letter-spacing: 0.1em;
+        font-size: 0.56rem;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: rgba(237, 233, 224, 0.35);
+        color: rgba(237, 233, 224, 0.32);
     }
 
     .playlist-item-index {
         font-family: 'Space Mono', monospace;
-        font-size: 0.6rem;
+        font-size: 0.56rem;
         color: rgba(237, 233, 224, 0.2);
         flex-shrink: 0;
-        margin-left: auto;
-        min-width: 18px;
+        min-width: 16px;
         text-align: right;
     }
 
-    .playlist-item.active .playlist-item-index {
-        color: #e8a020;
-    }
+    .playlist-item.active .playlist-item-index { color: #e8a020; }
 `);
 
 const html = /* html */`
 <div id="container">
     <div id="playerRow">
-        <div id="playerContainer">
-            <div id="coverWrapper">
-                <img id="coverImage" src="" alt="Track Cover">
-            </div>
+        <div id="coverWrapper">
+            <img id="coverImage" src="" alt="Track Cover">
+        </div>
+        <div id="playerCenter">
             <div id="trackInfo">
                 <span id="trackTitle">Titre</span>
                 <span id="trackArtist">Artiste</span>
@@ -279,24 +261,24 @@ const html = /* html */`
                 </webaudio-switch>
                 <button class="nav-btn" id="btnNext">&#9654;&#9654;</button>
             </div>
-            <audio id="myplayer" controls></audio>
         </div>
         <div class="controls">
             <webaudio-knob
                 id="knobVolume" src="./components/images/707.png"
-                width=34 height=128 sprites=98 min=0 max=1 step=0.01 value=0.5>
+                width=26 height=72 sprites=98 min=0 max=1 step=0.01 value=0.5>
             </webaudio-knob>
             <webaudio-knob
                 id="knobPan" src="./components/images/707.png"
-                width=34 height=128 sprites=98 min=-1 max=1 step=0.01 value=0>
+                width=26 height=72 sprites=98 min=-1 max=1 step=0.01 value=0>
             </webaudio-knob>
             <webaudio-knob
                 id="knobSpeed" src="./components/images/707.png"
-                width=34 height=128 sprites=98 min=0.1 max=2 step=0.01 value=1>
+                width=26 height=72 sprites=98 min=0.1 max=2 step=0.01 value=1>
             </webaudio-knob>
         </div>
     </div>
     <div id="playlist"></div>
+    <audio id="myplayer"></audio>
 </div>
 `;
 

@@ -25,16 +25,32 @@ window.onload = () => {
     const wins = ['win-player', 'win-eq', 'win-waveform', 'win-wam']
         .map(id => document.querySelector('#' + id));
 
-    // Positions initiales : 2 fenêtres côte à côte, 2 en dessous
-    const W = 420, H = 322, GAP = 10;
-    const arenaH = window.innerHeight - 50;
-    const sx = Math.max(10, (window.innerWidth - W * 2 - GAP) / 2);
-    const sy = Math.max(10, (arenaH - H * 2 - GAP) / 2);
+    // Positionner après rendu pour lire les vraies dimensions
+    requestAnimationFrame(() => {
+        const GAP = 10;
+        const arenaW = window.innerWidth;
+        const arenaH = window.innerHeight - 50;
 
-    wins[0].style.cssText = `left:${sx}px; top:${sy}px`;
-    wins[1].style.cssText = `left:${sx + W + GAP}px; top:${sy}px`;
-    wins[2].style.cssText = `left:${sx}px; top:${sy + H + GAP}px`;
-    wins[3].style.cssText = `left:${sx + W + GAP}px; top:${sy + H + GAP}px`;
+        const w0 = wins[0].offsetWidth  || 440;
+        const h0 = wins[0].offsetHeight || 340;
+        const w1 = wins[1].offsetWidth  || 460;
+        const h1 = wins[1].offsetHeight || 300;
+        const w2 = wins[2].offsetWidth  || 440;
+        const h2 = wins[2].offsetHeight || 200;
+        const w3 = wins[3].offsetWidth  || 320;
+        const h3 = wins[3].offsetHeight || 300;
 
-    initDraggable(wins);
+        const colLeft  = Math.max(10, (arenaW / 2 - Math.max(w0, w2)) / 2);
+        const colRight = Math.max(colLeft + Math.max(w0, w2) + GAP, arenaW / 2);
+
+        const rowTop    = Math.max(10, (arenaH - Math.max(h0, h1) - GAP - Math.max(h2, h3)) / 2);
+        const rowBottom = rowTop + Math.max(h0, h1) + GAP;
+
+        wins[0].style.cssText = `left:${colLeft}px;  top:${rowTop}px`;
+        wins[1].style.cssText = `left:${colRight}px; top:${rowTop}px`;
+        wins[2].style.cssText = `left:${colLeft}px;  top:${rowBottom}px`;
+        wins[3].style.cssText = `left:${colRight}px; top:${Math.min(rowBottom, arenaH - h3 - 10)}px`;
+
+        initDraggable(wins);
+    });
 };

@@ -108,11 +108,18 @@ main {
 
 /* ── Fenêtre WAM ─────────────────────────────────────────── */
 
+#win-wam {
+    max-height: calc(100vh - 80px);
+    display: inline-flex;
+    flex-direction: column;
+}
+
 .wam-container {
     background: #11111c;
     border: 1px solid rgba(255, 255, 255, 0.07);
     border-top: none;
     border-radius: 0 0 14px 14px;
     overflow-y: auto;
-    max-height: calc(100vh - 160px); /* header 50px + titlebar 22px + marges */
+    flex: 1;
+    min-height: 0;
 }
