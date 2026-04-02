@@ -10,11 +10,10 @@ sheet.replaceSync(/* css */`
         background: #11111c;
         border: 1px solid rgba(255, 255, 255, 0.07);
         border-top-color: rgba(255, 255, 255, 0.12);
-        padding: 12px;
+        padding: 10px;
         border-radius: 14px;
         color: #ede9e0;
-        height: 300px;
-        width: 420px;
+        width: 300px;
         position: relative;
         overflow: hidden;
     }
@@ -30,12 +29,11 @@ sheet.replaceSync(/* css */`
     .eq-controls {
         background: rgba(0, 0, 0, 0.25);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        padding: 18px 10px 12px;
+        padding: 14px 6px 10px;
         border-radius: 10px;
         display: flex;
         flex-direction: row;
-        gap: 4px;
-        height: 100%;
+        gap: 2px;
         justify-content: center;
         align-items: center;
     }
@@ -44,7 +42,7 @@ sheet.replaceSync(/* css */`
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 60px;
+        width: 44px;
         position: relative;
     }
 
@@ -101,66 +99,66 @@ const html = `
 <div id="container">
     <div class="eq-controls">
         <div class="control-row">
-            <webaudio-knob 
+            <webaudio-knob
             id="knobEq0"
-            src="./components/images/707.png" 
-            width=34
-            height=128
+            src="./components/images/707.png"
+            width=26
+            height=80
             sprites=98
             min=0 max=1 step=0.01 value=0.5 >
         </webaudio-knob>
         <span class="knob-value" id="knobValue0">0 dB</span>
         </div>
         <div class="control-row">
-            <webaudio-knob 
+            <webaudio-knob
             id="knobEq1"
-            src="./components/images/707.png" 
-            width=34
-            height=128
+            src="./components/images/707.png"
+            width=26
+            height=80
             sprites=98
             min=0 max=1 step=0.01 value=0.5 >
         </webaudio-knob>
         <span class="knob-value" id="knobValue1">0 dB</span>
         </div>
         <div class="control-row">
-            <webaudio-knob 
+            <webaudio-knob
             id="knobEq2"
-            src="./components/images/707.png" 
-            width=34
-            height=128
+            src="./components/images/707.png"
+            width=26
+            height=80
             sprites=98
             min=0 max=1 step=0.01 value=0.5 >
         </webaudio-knob>
         <span class="knob-value" id="knobValue2">0 dB</span>
         </div>
         <div class="control-row">
-            <webaudio-knob 
+            <webaudio-knob
             id="knobEq3"
-            src="./components/images/707.png" 
-            width=34
-            height=128
+            src="./components/images/707.png"
+            width=26
+            height=80
             sprites=98
             min=0 max=1 step=0.01 value=0.5 >
         </webaudio-knob>
         <span class="knob-value" id="knobValue3">0 dB</span>
         </div>
         <div class="control-row">
-            <webaudio-knob 
+            <webaudio-knob
             id="knobEq4"
-            src="./components/images/707.png" 
-            width=34
-            height=128
+            src="./components/images/707.png"
+            width=26
+            height=80
             sprites=98
             min=0 max=1 step=0.01 value=0.5 >
         </webaudio-knob>
         <span class="knob-value" id="knobValue4">0 dB</span>
       </div>
         <div class="control-row">
-            <webaudio-knob 
+            <webaudio-knob
             id="knobEq5"
-            src="./components/images/707.png" 
-            width=34
-            height=128
+            src="./components/images/707.png"
+            width=26
+            height=80
             sprites=98
             min=0 max=1 step=0.01 value=0.5 >
         </webaudio-knob>
