@@ -1,5 +1,29 @@
 # History
 
+## [2026-04-02] — Refactoring architecture : composants autonomes, attributs HTML, chemins distants
+
+- **Fichiers modifiés** : `components/ConnectableComponent.js`, `components/audioplayer.js`, `components/equalizer.js`, `components/waveform.js`, `js/script.js`, `index.html`
+- **Fichiers créés** : `components/modules/audioContext.js`
+- **Type** : `refactor`
+- **Description** :
+  - Création du singleton `audioContext.js` (Scénario A, CLAUDE.md §3) partagé entre tous les composants via `import { getAudioContext, resumeAudioContext }`
+  - Ajout de `initAudioGraph()` dans `ConnectableComponent` : chaque composant construit son graphe audio de façon autonome dans `connectedCallback`, sans orchestrateur externe
+  - `connectComponent()` déroute désormais la sortie de `ctx.destination` avant de connecter au nœud cible (reroutage propre)
+  - Fix chemins d'assets cassés à distance : `const BASE = new URL('.', import.meta.url).href` pour toutes les images webaudiocontrols ; résolution des chemins `tracks.json` et des URLs audio/cover contre l'URL du JSON lui-même
+  - Ajout d'attributs HTML observés sur tous les composants : `src`, `autoplay` (`my-audio-player`) ; `preset` (`my-eq`) ; `color`, `fft-size` (`my-waveform`)
+  - `disconnectedCallback` propre sur tous les composants : abort des listeners (AbortController), déconnexion des nœuds audio, arrêt de la boucle rAF (waveform)
+  - Tous les champs publics d'implémentation interne renommés en champs privés (`#filters`, `#tracks`, `#analyser`, etc.)
+  - `script.js` simplifié : suppression de `new AudioContext()` et des `setAudioContext()` ; il ne sert plus qu'à câbler la chaîne studio et activer les fenêtres draggables
+- **Raison** : Exigences du cours — composants utilisables via URI distante, paramétrables par attributs HTML, faiblement couplés, nettoyage mémoire correct.
+- **Skills appliqués** : `web-components`, `web-audio`
+- **Décisions de design** :
+  - **Architecture hybride standalone + chaînable** : par défaut chaque composant est autonome (se connecte à `ctx.destination`). `connectComponent()` permet le chaînage optionnel (`player → eq → waveform → destination`) sans rendre les composants dépendants les uns des autres. Alternative "imbrication pure" rejetée car elle exige un composant parent — incompatible avec l'usage via URI distante. Alternative "standalone pur" rejetée car l'EQ et le Waveform sont inutiles sans source audio.
+  - **`import.meta.url` comme seul mécanisme de résolution de chemins** : garantit que les assets (images, JSON) sont résolus relativement au fichier composant, pas à la page HTML. Fonctionne en local, GitHub Pages et CDN sans modification.
+  - **Singleton via module ES** : `let _ctx = null` dans un module ES garantit une instance unique par realm — singleton natif sans boilerplate de classe statique.
+  - **`setAudioContext()` conservé** : rétrocompatibilité avec les usages Scénario B (parent distribue le contexte). La garde `#audioGraphBuilt` empêche un double appel à `buildAudioGraph()`.
+
+---
+
 ## [2026-04-02] — Refonte compacte du layout `<my-audio-player>`
 
 - **Fichiers modifiés** : `components/audioplayer.js`

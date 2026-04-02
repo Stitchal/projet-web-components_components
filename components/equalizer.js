@@ -1,6 +1,11 @@
 import "./libs/webaudiocontrols.js";
 import { ConnectableComponent } from "./ConnectableComponent.js";
 
+// Résolution des chemins d'images relative au fichier composant via import.meta.url.
+// Permet l'hébergement distant : l'URL est calculée depuis ce fichier JS,
+// pas depuis index.html. Fonctionne en local, GitHub Pages ou CDN.
+const BASE = new URL('.', import.meta.url).href;
+
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(/* css */`
     * { box-sizing: border-box; }
@@ -95,164 +100,176 @@ sheet.replaceSync(/* css */`
     }
 `);
 
-const html = `
+// BASE est calculé au niveau module — interpolation correcte même en usage distant.
+const html = /* html */`
 <div id="container">
     <div class="eq-controls">
         <div class="control-row">
-            <webaudio-knob
-            id="knobEq0"
-            src="./components/images/707.png"
-            width=26
-            height=80
-            sprites=98
-            min=0 max=1 step=0.01 value=0.5 >
-        </webaudio-knob>
-        <span class="knob-value" id="knobValue0">0 dB</span>
+            <webaudio-knob id="knobEq0" src="${BASE}images/707.png"
+                width=26 height=80 sprites=98 min=0 max=1 step=0.01 value=0.5>
+            </webaudio-knob>
+            <span class="knob-value" id="knobValue0">0 dB</span>
         </div>
         <div class="control-row">
-            <webaudio-knob
-            id="knobEq1"
-            src="./components/images/707.png"
-            width=26
-            height=80
-            sprites=98
-            min=0 max=1 step=0.01 value=0.5 >
-        </webaudio-knob>
-        <span class="knob-value" id="knobValue1">0 dB</span>
+            <webaudio-knob id="knobEq1" src="${BASE}images/707.png"
+                width=26 height=80 sprites=98 min=0 max=1 step=0.01 value=0.5>
+            </webaudio-knob>
+            <span class="knob-value" id="knobValue1">0 dB</span>
         </div>
         <div class="control-row">
-            <webaudio-knob
-            id="knobEq2"
-            src="./components/images/707.png"
-            width=26
-            height=80
-            sprites=98
-            min=0 max=1 step=0.01 value=0.5 >
-        </webaudio-knob>
-        <span class="knob-value" id="knobValue2">0 dB</span>
+            <webaudio-knob id="knobEq2" src="${BASE}images/707.png"
+                width=26 height=80 sprites=98 min=0 max=1 step=0.01 value=0.5>
+            </webaudio-knob>
+            <span class="knob-value" id="knobValue2">0 dB</span>
         </div>
         <div class="control-row">
-            <webaudio-knob
-            id="knobEq3"
-            src="./components/images/707.png"
-            width=26
-            height=80
-            sprites=98
-            min=0 max=1 step=0.01 value=0.5 >
-        </webaudio-knob>
-        <span class="knob-value" id="knobValue3">0 dB</span>
+            <webaudio-knob id="knobEq3" src="${BASE}images/707.png"
+                width=26 height=80 sprites=98 min=0 max=1 step=0.01 value=0.5>
+            </webaudio-knob>
+            <span class="knob-value" id="knobValue3">0 dB</span>
         </div>
         <div class="control-row">
-            <webaudio-knob
-            id="knobEq4"
-            src="./components/images/707.png"
-            width=26
-            height=80
-            sprites=98
-            min=0 max=1 step=0.01 value=0.5 >
-        </webaudio-knob>
-        <span class="knob-value" id="knobValue4">0 dB</span>
-      </div>
+            <webaudio-knob id="knobEq4" src="${BASE}images/707.png"
+                width=26 height=80 sprites=98 min=0 max=1 step=0.01 value=0.5>
+            </webaudio-knob>
+            <span class="knob-value" id="knobValue4">0 dB</span>
+        </div>
         <div class="control-row">
-            <webaudio-knob
-            id="knobEq5"
-            src="./components/images/707.png"
-            width=26
-            height=80
-            sprites=98
-            min=0 max=1 step=0.01 value=0.5 >
-        </webaudio-knob>
-        <span class="knob-value" id="knobValue5">0 dB</span>
+            <webaudio-knob id="knobEq5" src="${BASE}images/707.png"
+                width=26 height=80 sprites=98 min=0 max=1 step=0.01 value=0.5>
+            </webaudio-knob>
+            <span class="knob-value" id="knobValue5">0 dB</span>
         </div>
 
-      <div class="input-range">
-        <div class="control-row"><label>60Hz</label><input type="range" class="eq-slider" id="eq0" data-filter="0" value="0" min="-30" max="30"><output>0 dB</output></div>
-        <div class="control-row"><label>170Hz</label><input type="range" class="eq-slider" id="eq1" data-filter="1" value="0" min="-30" max="30"><output>0 dB</output></div>
-        <div class="control-row"><label>350Hz</label><input type="range" class="eq-slider" id="eq2" data-filter="2" value="0" min="-30" max="30"><output>0 dB</output></div>
-        <div class="control-row"><label>1kHz</label><input type="range" class="eq-slider" id="eq3" data-filter="3" value="0" min="-30" max="30"><output>0 dB</output></div>
-        <div class="control-row"><label>3.5kHz</label><input type="range" class="eq-slider" id="eq4" data-filter="4" value="0" min="-30" max="30"><output>0 dB</output></div>
-        <div class="control-row"><label>10kHz</label><input type="range" class="eq-slider" id="eq5" data-filter="5" value="0" min="-30" max="30"><output>0 dB</output></div>
+        <div class="input-range">
+            <div class="control-row"><label>60Hz</label><input type="range" class="eq-slider" id="eq0" data-filter="0" value="0" min="-30" max="30"><output>0 dB</output></div>
+            <div class="control-row"><label>170Hz</label><input type="range" class="eq-slider" id="eq1" data-filter="1" value="0" min="-30" max="30"><output>0 dB</output></div>
+            <div class="control-row"><label>350Hz</label><input type="range" class="eq-slider" id="eq2" data-filter="2" value="0" min="-30" max="30"><output>0 dB</output></div>
+            <div class="control-row"><label>1kHz</label><input type="range" class="eq-slider" id="eq3" data-filter="3" value="0" min="-30" max="30"><output>0 dB</output></div>
+            <div class="control-row"><label>3.5kHz</label><input type="range" class="eq-slider" id="eq4" data-filter="4" value="0" min="-30" max="30"><output>0 dB</output></div>
+            <div class="control-row"><label>10kHz</label><input type="range" class="eq-slider" id="eq5" data-filter="5" value="0" min="-30" max="30"><output>0 dB</output></div>
         </div>
     </div>
 </div>
 `;
 
+/**
+ * Égaliseur paramétrique 6 bandes (BiquadFilter peaking).
+ *
+ * ## Attributs HTML
+ * - `preset` : gains dB séparés par virgule, ex. "-6,0,3,3,0,-3"
+ *              (6 valeurs dans l'ordre : 60Hz, 170Hz, 350Hz, 1kHz, 3.5kHz, 10kHz)
+ *
+ * ## Autonomie
+ * Ce composant fonctionne seul : il récupère le singleton AudioContext,
+ * construit la chaîne de filtres et connecte la sortie à ctx.destination.
+ * Il peut être inséré dans une chaîne via connectComponent().
+ *
+ * ## Usage standalone
+ * <my-eq></my-eq>
+ * <my-eq preset="-6,0,3,3,0,-3"></my-eq>
+ */
 class Equalizer extends ConnectableComponent {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-    this.filters = [];
-    this.audioCtx = null;
-  }
+    #filters = [];
+    #abortController = null;
 
-  connectedCallback() {
-    this.shadowRoot.adoptedStyleSheets = [sheet];
-    this.shadowRoot.setHTMLUnsafe(html);
+    static get observedAttributes() { return ['preset']; }
 
-    // on n'a pas encore l'AudioContext, on l'obtiendra via setAudioContext()
-    // on ne peut pas encore configurer le graphe audio
-    this.defineListeners();
-  }
-
-  buildAudioGraph() {
-    // Build the Equalizer chain
-    [60, 170, 350, 1000, 3500, 10000].forEach((freq) => {
-      const eq = this.audioCtx.createBiquadFilter();
-      eq.frequency.value = freq;
-      eq.type = "peaking";
-      eq.gain.value = 0;
-      this.filters.push(eq);
-    });
-
-    // Connect:  Filter0 -> Filter1... -> Destination
-    for (let i = 0; i < this.filters.length - 1; i++) {
-      this.filters[i].connect(this.filters[i + 1]);
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
     }
-    // Pour le moment, la source et la destination seront connectées depuis l'extérieur
-  }
 
-  getInputNode() {
-    // retourne le premier noeud de l'égaliseur pour que le player puisse s'y connecter
-    return this.filters[0];
-  }
+    connectedCallback() {
+        this.shadowRoot.adoptedStyleSheets = [sheet];
+        this.shadowRoot.setHTMLUnsafe(html);
 
-  getOutputNode() {
-    // retourne le dernier noeud de l'égaliseur pour que le player puisse s'y connecter
-    return this.filters[this.filters.length - 1];
-  }
+        // Auto-init : graphe audio construit depuis le singleton AudioContext
+        this.initAudioGraph();
 
-  defineListeners() {
-    const sliders = this.shadowRoot.querySelectorAll('.eq-slider');
+        this.#defineListeners();
 
-    sliders.forEach(slider => {
-      slider.addEventListener('input', (e) => {
-        const index = e.target.dataset.filter;
-        const value = parseFloat(e.target.value);
-        if (this.filters[index]) {
-          this.filters[index].gain.value = value;
-          e.target.nextElementSibling.value = value + " dB";
-        }
-      });
-    });
+        // Appliquer le preset si défini avant l'insertion dans le DOM
+        const preset = this.getAttribute('preset');
+        if (preset) this.#applyPreset(preset);
+    }
 
-    const knobIds = ['knobEq0', 'knobEq1', 'knobEq2', 'knobEq3', 'knobEq4', 'knobEq5'];
-    knobIds.forEach((knobId, index) => {
-      const knob = this.shadowRoot.querySelector('#' + knobId);
-      const slider = this.shadowRoot.querySelector('#eq' + index);
-      const valueDisplay = this.shadowRoot.querySelector('#knobValue' + index);
-      if (knob && slider) {
-        knob.addEventListener('input', (e) => {
-          const value = parseFloat(e.target.value) * 60 - 30; // Scale 0-1 to -30 to +30
-          slider.value = value;
-          if (valueDisplay) {
-            valueDisplay.textContent = value.toFixed(1) + " dB";
-            valueDisplay.classList.toggle('active', value !== 0);
-          }
-          slider.dispatchEvent(new Event('input')); // Trigger input event to update filter
+    attributeChangedCallback(name, oldVal, newVal) {
+        if (oldVal === newVal) return;
+        if (name === 'preset') this.#applyPreset(newVal);
+    }
+
+    buildAudioGraph() {
+        [60, 170, 350, 1000, 3500, 10000].forEach((freq) => {
+            const filter = this.audioCtx.createBiquadFilter();
+            filter.frequency.value = freq;
+            filter.type = 'peaking';
+            filter.gain.value = 0;
+            this.#filters.push(filter);
         });
-      }
-    });
-  }
+
+        // Chaîne : Filter0 → Filter1 → … → Filter5
+        for (let i = 0; i < this.#filters.length - 1; i++) {
+            this.#filters[i].connect(this.#filters[i + 1]);
+        }
+
+        // Connexion par défaut à ctx.destination
+        this.#filters.at(-1).connect(this.audioCtx.destination);
+        this._markConnectedToDestination();
+    }
+
+    getInputNode()  { return this.#filters[0]; }
+    getOutputNode() { return this.#filters.at(-1); }
+
+    disconnectedCallback() {
+        this.#abortController?.abort();
+        this.#abortController = null;
+        try { this.#filters.forEach(f => f.disconnect()); } catch (_) {}
+        this.#filters = [];
+        super.disconnectedCallback();
+    }
+
+    /**
+     * Applique un preset de gains dB.
+     * @param {string} value - Valeurs séparées par virgule, ex. "-6,0,3,3,0,-3"
+     */
+    #applyPreset(value) {
+        if (!value || !this.#filters.length) return;
+        value.split(',').map(Number).forEach((db, i) => {
+            if (this.#filters[i]) {
+                this.#filters[i].gain.value = db;
+                // Mettre à jour l'affichage
+                const knob = this.shadowRoot?.querySelector(`#knobEq${i}`);
+                const display = this.shadowRoot?.querySelector(`#knobValue${i}`);
+                if (knob) knob.value = (db + 30) / 60; // rescale dB → 0-1
+                if (display) {
+                    display.textContent = db.toFixed(1) + ' dB';
+                    display.classList.toggle('active', db !== 0);
+                }
+            }
+        });
+    }
+
+    #defineListeners() {
+        this.#abortController = new AbortController();
+        const { signal } = this.#abortController;
+
+        // Knobs → filtres directement (sans passer par les input[range] cachés)
+        for (let i = 0; i < 6; i++) {
+            const knob = this.shadowRoot.querySelector(`#knobEq${i}`);
+            const display = this.shadowRoot.querySelector(`#knobValue${i}`);
+            if (!knob) continue;
+
+            knob.addEventListener('input', (e) => {
+                const db = parseFloat(e.target.value) * 60 - 30; // 0-1 → -30..+30 dB
+                if (this.#filters[i]) this.#filters[i].gain.value = db;
+                if (display) {
+                    display.textContent = db.toFixed(1) + ' dB';
+                    display.classList.toggle('active', db !== 0);
+                }
+            }, { signal });
+        }
+    }
 }
 
 customElements.define('my-eq', Equalizer);

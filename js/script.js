@@ -1,27 +1,32 @@
 import { initDraggable } from './dragManager.js';
 
+/**
+ * Orchestrateur optionnel du layout Studio.
+ *
+ * Ce fichier n'est PAS requis pour que les composants fonctionnent.
+ * Chaque composant (<my-audio-player>, <my-eq>, <my-waveform>) est autonome :
+ * il initialise son propre graphe audio via le singleton audioContext.js
+ * et se connecte seul à ctx.destination.
+ *
+ * Ce script sert uniquement à :
+ * 1. Câbler la chaîne studio : player → eq → waveform → destination
+ *    (connectComponent() reroute chaque sortie depuis ctx.destination vers le suivant)
+ * 2. Positionner et activer le système de fenêtres draggables
+ */
 window.onload = () => {
-    const ctx = new AudioContext();
-
-    // 1ere phase : on cree les composants et on partage l'AudioContext
-    const player = document.querySelector('#player');
-    player.setAudioContext(ctx);
-
-    const eq = document.querySelector('#eq');
-    eq.setAudioContext(ctx);
-
+    // Câblage optionnel de la chaîne : player → eq → waveform → destination
+    // Les composants ont déjà construit leur graphe dans connectedCallback.
+    // connectComponent() déroute player.output de ctx.destination → eq.input,
+    // et eq.output de ctx.destination → waveform.input.
+    // waveform.analyser reste connecté à ctx.destination (passthrough audio).
+    const player   = document.querySelector('#player');
+    const eq       = document.querySelector('#eq');
     const waveform = document.querySelector('#waveform');
-    waveform.setAudioContext(ctx);
 
-    // 2eme phase : on cree le graphe des composants
-    // player -> eq -> waveform -> destination
     player.connectComponent(eq);
     eq.connectComponent(waveform);
 
-    // 3eme phase : on connecte le dernier composant à la destination audio
-    waveform.getOutputNode().connect(ctx.destination);
-
-    // 4eme phase : fenêtres draggables avec magnétisme
+    // Fenêtres draggables avec magnétisme
     const wins = ['win-player', 'win-eq', 'win-waveform', 'win-wam']
         .map(id => document.querySelector('#' + id));
 

@@ -12,12 +12,31 @@
         }
     }
     </script> -->
+
+    <!--
+      Composants autonomes — chargement via URI locale ou distante.
+      Chaque composant fonctionne seul, sans script.js :
+        - Il récupère le singleton AudioContext (components/modules/audioContext.js)
+        - Il construit son graphe audio dans connectedCallback
+        - Il se connecte à ctx.destination par défaut
+
+      Attributs HTML disponibles :
+        <my-audio-player src="URL/tracks.json">
+        <my-eq preset="-3,0,2,4,0,-2">
+        <my-waveform color="#39e082" fft-size="1024">
+
+      Usage standalone (sans script.js) :
+        <my-audio-player src="https://host.com/tracks.json"></my-audio-player>
+        <my-eq preset="-6,0,3,3,0,-3"></my-eq>
+        <my-waveform color="#e8a020" fft-size="2048"></my-waveform>
+    -->
     <script src="./components/audioplayer.js" type="module"></script>
     <script src="./components/equalizer.js" type="module"></script>
     <script src="./components/waveform.js" type="module"></script>
     <script type="module" src="https://mainline.i3s.unice.fr/wam_wc/wam-host/wamHost.js"></script>
     <script type="module" src="https://mainline.i3s.unice.fr/wam_wc/wam-plugin/wamPlugin.js"></script>
     <!-- <script src="./components/butterchurn.js" type="module"></script> -->
+    <!-- script.js est optionnel : câble la chaîne studio et active les fenêtres draggables -->
     <script src="js/script.js" type="module"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,15 +52,28 @@
     <main>
         <div class="window" id="win-player">
             <div class="titlebar"><span class="titlebar-dot"></span>PLAYER</div>
-            <my-audio-player id="player"></my-audio-player>
+            <!--
+              src : URL du JSON de playlist (défaut : assets/tracks.json relatif au composant)
+              autoplay : présence de l'attribut → lecture automatique
+            -->
+            <my-audio-player id="player" src="./assets/tracks.json"></my-audio-player>
         </div>
         <div class="window" id="win-eq">
             <div class="titlebar"><span class="titlebar-dot"></span>EQUALIZER</div>
-            <my-eq id="eq"></my-eq>
+            <!--
+              preset : gains dB séparés par virgule pour les 6 bandes
+                       (60Hz, 170Hz, 350Hz, 1kHz, 3.5kHz, 10kHz)
+                       ex. preset="-6,0,3,3,0,-3"
+            -->
+            <my-eq id="eq" preset="0,0,0,0,0,0"></my-eq>
         </div>
         <div class="window" id="win-waveform">
             <div class="titlebar"><span class="titlebar-dot"></span>WAVEFORM</div>
-            <my-waveform id="waveform"></my-waveform>
+            <!--
+              color    : couleur du tracé (défaut : #39e082)
+              fft-size : taille FFT de l'analyseur, puissance de 2 (défaut : 1024)
+            -->
+            <my-waveform id="waveform" color="#39e082" fft-size="1024"></my-waveform>
         </div>
         <!-- <my-butterchurn id="butterchurn"></my-butterchurn> -->
         <div class="window" id="win-wam">
