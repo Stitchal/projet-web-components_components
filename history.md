@@ -1,5 +1,16 @@
 # History
 
+## [2026-04-02] — Ajout d'une playlist visuelle dans `<my-audio-player>`
+
+- **Fichiers modifiés** : `components/audioplayer.js`
+- **Type** : `feature`
+- **Description** : Remplacement du `<select>` de sélection de piste par une playlist visuelle avec miniatures, titre, artiste et numéro. Ajout des boutons Prev/Next, auto-passage à la piste suivante en fin de lecture, et mise en surbrillance de la piste active.
+- **Raison** : Amélioration de l'UX — la liste déroulante n'affichait pas les covers et ne permettait pas la navigation rapide.
+- **Skills appliqués** : `web-components`, `frontend-design`
+- **Décisions de design** : Event delegation sur `#playlist` pour la sélection ; `#currentIndex` en champ privé ; `scrollIntoView` pour garder la piste active visible.
+
+---
+
 ## [2026-03-31] — Intégration du plugin WAM Soundfont via `<wam-host>`
 
 - **Fichiers modifiés** : `index.html`, `css/styles.css`, `js/script.js`

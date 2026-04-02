@@ -6,7 +6,6 @@ sheet.replaceSync(/* css */`
     * { box-sizing: border-box; }
 
     #container {
-        height: 300px;
         min-width: 420px;
         background: #11111c;
         border: 1px solid rgba(255, 255, 255, 0.07);
@@ -16,9 +15,8 @@ sheet.replaceSync(/* css */`
         padding: 14px;
         border-radius: 14px;
         display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 12px;
+        flex-direction: column;
+        gap: 10px;
         position: relative;
         overflow: hidden;
     }
@@ -29,6 +27,14 @@ sheet.replaceSync(/* css */`
         top: 0; left: 20%; right: 20%;
         height: 1px;
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+
+    #playerRow {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        height: 220px;
     }
 
     #coverWrapper {
@@ -102,31 +108,30 @@ sheet.replaceSync(/* css */`
         display: block;
     }
 
-    select {
-        background: #1a1a2a;
+    #navControls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .nav-btn {
+        background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 7px;
-        color: #ede9e0;
-        padding: 7px 30px 7px 10px;
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 0.9rem;
-        letter-spacing: 0.03em;
-        width: 100%;
+        border-radius: 6px;
+        color: rgba(237, 233, 224, 0.6);
         cursor: pointer;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        transition: border-color 0.2s;
+        padding: 4px 10px;
+        font-family: 'Space Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        transition: background 0.15s, color 0.15s;
     }
 
-    select:focus {
-        outline: none;
-        border-color: rgba(232, 160, 32, 0.5);
-        box-shadow: 0 0 0 2px rgba(232, 160, 32, 0.12);
+    .nav-btn:hover {
+        background: rgba(232, 160, 32, 0.15);
+        border-color: rgba(232, 160, 32, 0.4);
+        color: #e8a020;
     }
-
-    select option { background: #1a1a2a; }
 
     .controls {
         display: flex;
@@ -163,66 +168,155 @@ sheet.replaceSync(/* css */`
     #knobVolume::after { content: "VOL"; }
     #knobPan::after    { content: "PAN"; }
     #knobSpeed::after  { content: "SPD"; }
+
+    /* ── Playlist ─────────────────────────────────────────── */
+
+    #playlist {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 160px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
+
+    .playlist-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 8px;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: background 0.15s;
+        border: 1px solid transparent;
+    }
+
+    .playlist-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .playlist-item.active {
+        background: rgba(232, 160, 32, 0.08);
+        border-color: rgba(232, 160, 32, 0.2);
+    }
+
+    .playlist-item-cover {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        object-fit: cover;
+        flex-shrink: 0;
+        opacity: 0.85;
+    }
+
+    .playlist-item.active .playlist-item-cover {
+        opacity: 1;
+    }
+
+    .playlist-item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        overflow: hidden;
+    }
+
+    .playlist-item-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: rgba(237, 233, 224, 0.9);
+    }
+
+    .playlist-item.active .playlist-item-title {
+        color: #e8a020;
+    }
+
+    .playlist-item-artist {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.6rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(237, 233, 224, 0.35);
+    }
+
+    .playlist-item-index {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.6rem;
+        color: rgba(237, 233, 224, 0.2);
+        flex-shrink: 0;
+        margin-left: auto;
+        min-width: 18px;
+        text-align: right;
+    }
+
+    .playlist-item.active .playlist-item-index {
+        color: #e8a020;
+    }
 `);
 
 const html = /* html */`
 <div id="container">
-    <div id="playerContainer">
-        <div id="coverWrapper">
-            <img id="coverImage" src="" alt="Track Cover">
+    <div id="playerRow">
+        <div id="playerContainer">
+            <div id="coverWrapper">
+                <img id="coverImage" src="" alt="Track Cover">
+            </div>
+            <div id="trackInfo">
+                <span id="trackTitle">Titre</span>
+                <span id="trackArtist">Artiste</span>
+            </div>
+            <div id="navControls">
+                <button class="nav-btn" id="btnPrev">&#9664;&#9664;</button>
+                <webaudio-switch
+                    src="./components/images/S_pinkponk-ON-OFF.png"
+                    id="sw1" type="toggle" width="60" height="40">
+                </webaudio-switch>
+                <button class="nav-btn" id="btnNext">&#9654;&#9654;</button>
+            </div>
+            <audio id="myplayer" controls></audio>
         </div>
-        <div id="trackInfo">
-            <select id="trackSelect">
-                <option value="" disabled selected>Select a track...</option>
-            </select>
-            <span id="trackArtist">Artiste</span>
+        <div class="controls">
+            <webaudio-knob
+                id="knobVolume" src="./components/images/707.png"
+                width=34 height=128 sprites=98 min=0 max=1 step=0.01 value=0.5>
+            </webaudio-knob>
+            <webaudio-knob
+                id="knobPan" src="./components/images/707.png"
+                width=34 height=128 sprites=98 min=-1 max=1 step=0.01 value=0>
+            </webaudio-knob>
+            <webaudio-knob
+                id="knobSpeed" src="./components/images/707.png"
+                width=34 height=128 sprites=98 min=0.1 max=2 step=0.01 value=1>
+            </webaudio-knob>
         </div>
-        <webaudio-switch
-            src="./components/images/S_pinkponk-ON-OFF.png"
-            id="sw1" type="toggle" width="60" height="40">
-        </webaudio-switch>
-        <audio id="myplayer" controls></audio>
     </div>
-    <div class="controls">
-        <webaudio-knob
-            id="knobVolume" src="./components/images/707.png"
-            width=34 height=128 sprites=98 min=0 max=1 step=0.01 value=0.5>
-        </webaudio-knob>
-        <webaudio-knob
-            id="knobPan" src="./components/images/707.png"
-            width=34 height=128 sprites=98 min=-1 max=1 step=0.01 value=0>
-        </webaudio-knob>
-        <webaudio-knob
-            id="knobSpeed" src="./components/images/707.png"
-            width=34 height=128 sprites=98 min=0.1 max=2 step=0.01 value=1>
-        </webaudio-knob>
-    </div>
+    <div id="playlist"></div>
 </div>
 `;
 
 class MyAudioPlayer extends ConnectableComponent {
+    #currentIndex = 0;
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        
-        // Initialize tracks array
         this.tracks = [];
-        
-        // Get initial src if provided
         this.src = this.getAttribute('src');
     }
 
     connectedCallback() {
         this.render();
-        
-        // Initialize audio element
+
         const audioElement = this.shadowRoot.querySelector('#myplayer');
-        if(this.src) {
-             audioElement.src = this.src;
-        }
+        if (this.src) audioElement.src = this.src;
         audioElement.crossOrigin = "anonymous";
 
-        // Initialize listeners and load tracks
         this.defineListeners();
         this.loadTracks();
     }
@@ -240,90 +334,119 @@ class MyAudioPlayer extends ConnectableComponent {
         this.panner = this.audioCtx.createStereoPanner();
         this.outputNode = this.audioCtx.createGain();
 
-        // Connect graph: source -> gain -> panner -> destination
         this.sourceNode.connect(this.gain);
         this.gain.connect(this.panner);
         this.panner.connect(this.outputNode);
-
     }
 
     getInputNode() { return this.sourceNode; }
     getOutputNode() { return this.outputNode; }
 
-    // --- Playlist & Visualization Logic ---
+    // --- Playlist ---
     async loadTracks() {
         try {
             const response = await fetch('./assets/tracks.json');
             this.tracks = await response.json();
-            this.updateSelect();
+            this.#buildPlaylist();
         } catch (error) {
             console.error("Error loading tracks:", error);
         }
     }
 
-    updateSelect() {
-        const select = this.shadowRoot.querySelector('#trackSelect');
+    #buildPlaylist() {
+        const playlist = this.shadowRoot.querySelector('#playlist');
         const audioElement = this.shadowRoot.querySelector('#myplayer');
         const coverImage = this.shadowRoot.querySelector('#coverImage');
 
-        if (!select) return;
+        if (!playlist) return;
 
-        // Populate dropdown
         this.tracks.forEach((track, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = track.title;
-            select.appendChild(option);
+            const item = document.createElement('div');
+            item.className = 'playlist-item';
+            item.dataset.index = index;
+
+            const cover = document.createElement('img');
+            cover.className = 'playlist-item-cover';
+            cover.src = track.cover || '';
+            cover.alt = track.title;
+
+            const info = document.createElement('div');
+            info.className = 'playlist-item-info';
+
+            const title = document.createElement('span');
+            title.className = 'playlist-item-title';
+            title.textContent = track.title;
+
+            const artist = document.createElement('span');
+            artist.className = 'playlist-item-artist';
+            artist.textContent = track.artist;
+
+            const idx = document.createElement('span');
+            idx.className = 'playlist-item-index';
+            idx.textContent = String(index + 1).padStart(2, '0');
+
+            info.append(title, artist);
+            item.append(cover, info, idx);
+            playlist.append(item);
         });
 
-        // Handle Selection
-        select.addEventListener('change', (event) => {
-            const trackIndex = event.target.value;
-            const selectedTrack = this.tracks[trackIndex];
-            
-            if (selectedTrack) {
-                this.changeTrack(audioElement, coverImage, selectedTrack);
-            }
+        // Event delegation on the playlist
+        playlist.addEventListener('click', (event) => {
+            const item = event.target.closest('.playlist-item');
+            if (!item) return;
+            const index = parseInt(item.dataset.index, 10);
+            this.#selectTrack(index, audioElement, coverImage);
         });
 
-        // Load first track by default if available
+        // Load first track
         if (this.tracks.length > 0) {
-            select.value = 0;
-            this.changeTrack(audioElement, coverImage, this.tracks[0]);
+            this.#selectTrack(0, audioElement, coverImage);
+        }
+    }
+
+    #selectTrack(index, audioElement, coverImage) {
+        if (index < 0 || index >= this.tracks.length) return;
+        this.#currentIndex = index;
+
+        const track = this.tracks[index];
+        this.changeTrack(audioElement, coverImage, track);
+
+        // Update active state in playlist
+        const playlist = this.shadowRoot.querySelector('#playlist');
+        if (playlist) {
+            playlist.querySelectorAll('.playlist-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            // Scroll active item into view
+            const activeItem = playlist.querySelector('.playlist-item.active');
+            activeItem?.scrollIntoView({ block: 'nearest' });
         }
     }
 
     changeTrack(audioElement, coverImage, track) {
         audioElement.src = track.audio;
-        this.src = track.audio; // Sync internal property
-        
-        // Update Cover Image
-        if (coverImage && track.cover) {
-            coverImage.src = track.cover;
-        }
+        this.src = track.audio;
 
-        // Update Info Text (Title & Artist)
+        if (coverImage && track.cover) coverImage.src = track.cover;
+
         const titleEl = this.shadowRoot.querySelector('#trackTitle');
         const artistEl = this.shadowRoot.querySelector('#trackArtist');
         if (titleEl) titleEl.textContent = track.title || "Titre inconnu";
         if (artistEl) artistEl.textContent = track.artist || "Artiste inconnu";
 
-        // Reset Play Switch and UI State
         const switchEl = this.shadowRoot.querySelector('#sw1');
         if (switchEl) {
             switchEl.removeAttribute('on');
-            switchEl.value = 0; 
+            switchEl.value = 0;
         }
-        
-        // Reset Visuals (Rotation and Progress Bar)
+
         if (coverImage) {
             coverImage.classList.remove('playing');
             coverImage.style.transform = 'rotate(0deg)';
         }
-        
-        // Reset Progress Ring
+
         const coverWrapper = this.shadowRoot.querySelector('#coverWrapper');
-        if(coverWrapper) {
+        if (coverWrapper) {
             coverWrapper.style.background = `conic-gradient(#1a1a2a 0%, #1a1a2a 0%)`;
         }
 
@@ -334,10 +457,10 @@ class MyAudioPlayer extends ConnectableComponent {
     defineListeners() {
         const audioElement = this.shadowRoot.querySelector('#myplayer');
         const coverImage = this.shadowRoot.querySelector('#coverImage');
-        const coverWrapper = this.shadowRoot.querySelector('#coverWrapper'); // Pour la barre de progression
+        const coverWrapper = this.shadowRoot.querySelector('#coverWrapper');
         const switchEl = this.shadowRoot.querySelector('#sw1');
 
-        // 1. Play/Pause Logic (Switch)
+        // Play/Pause
         if (switchEl) {
             switchEl.addEventListener('click', async () => {
                 if (audioElement.paused) {
@@ -351,85 +474,82 @@ class MyAudioPlayer extends ConnectableComponent {
             });
         }
 
-        // 2. Audio Event Listeners (Sync UI)
         audioElement.addEventListener('play', () => {
-            if(switchEl) switchEl.setAttribute('on', '');
-            if(coverImage) coverImage.classList.add('playing');
+            if (switchEl) switchEl.setAttribute('on', '');
+            if (coverImage) coverImage.classList.add('playing');
         });
 
         audioElement.addEventListener('pause', () => {
-            if(switchEl) switchEl.removeAttribute('on');
-            if(coverImage) coverImage.classList.remove('playing');
+            if (switchEl) switchEl.removeAttribute('on');
+            if (coverImage) coverImage.classList.remove('playing');
         });
 
+        // Auto-next on track end
         audioElement.addEventListener('ended', () => {
-            if(switchEl) switchEl.removeAttribute('on');
-            if(coverImage) coverImage.classList.remove('playing');
+            if (switchEl) switchEl.removeAttribute('on');
+            if (coverImage) coverImage.classList.remove('playing');
+            if (this.#currentIndex < this.tracks.length - 1) {
+                this.#selectTrack(this.#currentIndex + 1, audioElement, coverImage);
+                audioElement.play().catch(() => {});
+            }
         });
 
-        // --- NOUVEAU : Mise à jour de la barre de progression circulaire ---
+        // Progress ring
         audioElement.addEventListener('timeupdate', () => {
             if (audioElement.duration && coverWrapper) {
                 const progress = (audioElement.currentTime / audioElement.duration) * 100;
-                // Couleur vive pour la progression (#ff5500), couleur sombre pour le reste (#333)
                 coverWrapper.style.background = `conic-gradient(#e8a020 ${progress}%, #1a1a2a ${progress}%)`;
             }
         });
 
-        // 3. Audio Controls (Knobs)
+        // Prev / Next buttons
+        this.shadowRoot.querySelector('#btnPrev')?.addEventListener('click', () => {
+            this.#selectTrack(this.#currentIndex - 1, audioElement, coverImage);
+        });
+
+        this.shadowRoot.querySelector('#btnNext')?.addEventListener('click', () => {
+            this.#selectTrack(this.#currentIndex + 1, audioElement, coverImage);
+        });
+
+        // Knobs
         const volumeKnob = this.shadowRoot.querySelector('#knobVolume');
-        if(volumeKnob) {
+        if (volumeKnob) {
             volumeKnob.addEventListener('input', (event) => {
-                if(this.gain) this.gain.gain.value = event.target.value;
+                if (this.gain) this.gain.gain.value = event.target.value;
                 else audioElement.volume = event.target.value;
             });
         }
 
         const panKnob = this.shadowRoot.querySelector('#knobPan');
-        if(panKnob) {
+        if (panKnob) {
             panKnob.addEventListener('input', (event) => {
-                if(this.panner) this.panner.pan.value = event.target.value;
+                if (this.panner) this.panner.pan.value = event.target.value;
             });
         }
 
         const speedKnob = this.shadowRoot.querySelector('#knobSpeed');
-        if(speedKnob) {
+        if (speedKnob) {
             speedKnob.addEventListener('input', (event) => {
                 audioElement.playbackRate = event.target.value;
             });
         }
-        
-        // --- NOUVEAU : Seek functionality on coverWrapper click ---
-if (coverWrapper) {
-    coverWrapper.addEventListener('click', (event) => {
-        if (!audioElement.duration) return;
 
-        // Get the bounding box of the wrapper to find the center
-        const rect = coverWrapper.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+        // Seek on coverWrapper click
+        if (coverWrapper) {
+            coverWrapper.addEventListener('click', (event) => {
+                if (!audioElement.duration) return;
 
-        // Calculate the coordinates of the click relative to the center
-        const x = event.clientX - centerX;
-        const y = event.clientY - centerY;
-
-        // Calculate the angle in radians (Math.atan2 returns -PI to PI)
-        const angle = Math.atan2(y, x);
-
-        // Convert to degrees and shift so that 0 degrees is at the top (12 o'clock)
-        // By default, atan2(0,1) is 0 radians (3 o'clock)
-        let degrees = angle * (180 / Math.PI) + 90;
-
-        // Normalize degrees to be between 0 and 360
-        if (degrees < 0) degrees += 360;
-
-        // Calculate the percentage of the circle (0 to 1)
-        const percent = degrees / 360;
-
-        // Set the new current time of the audio
-        audioElement.currentTime = percent * audioElement.duration;
-    });
-}
+                const rect = coverWrapper.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const x = event.clientX - centerX;
+                const y = event.clientY - centerY;
+                const angle = Math.atan2(y, x);
+                let degrees = angle * (180 / Math.PI) + 90;
+                if (degrees < 0) degrees += 360;
+                audioElement.currentTime = (degrees / 360) * audioElement.duration;
+            });
+        }
     }
 
     render() {
