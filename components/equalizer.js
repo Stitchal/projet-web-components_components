@@ -18,7 +18,7 @@ sheet.replaceSync(/* css */`
         border: 1px solid var(--border, rgba(255,255,255,0.07));
         border-top-color: var(--border-top, rgba(255,255,255,0.12));
         padding: 10px;
-        border-radius: 14px;
+        border-radius: 0 0 14px 14px;
         color: var(--text, #ede9e0);
         width: 100%;
         position: relative;

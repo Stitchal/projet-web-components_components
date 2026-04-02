@@ -13,7 +13,7 @@ sheet.replaceSync(/* css */`
         color: #ede9e0;
         font-family: 'Barlow Condensed', sans-serif;
         padding: 10px;
-        border-radius: 14px;
+        border-radius: 0 0 14px 14px;
         display: flex;
         flex-direction: column;
         gap: 2px;
