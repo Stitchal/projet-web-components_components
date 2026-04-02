@@ -52,6 +52,7 @@ customElements.whenDefined('wam-host').then(() => {
     const display = document.querySelector('#wam-volume-display');
 
     // Attendre que le contexte ET le plugin soient prêts
+    let gainNode = null;
     const poll = setInterval(() => {
         const ctx = wamHost.audioContext;
         if (!ctx) return;
@@ -59,21 +60,19 @@ customElements.whenDefined('wam-host').then(() => {
         const plugins = wamHost.plugins;
         if (!plugins?.length) return;
 
-        // Attendre que le premier plugin ait un instance résolue
         Promise.resolve(plugins[0]?.instance).then(instance => {
             if (!instance?.audioNode) return;
+            if (gainNode) return; // déjà initialisé
 
             clearInterval(poll);
 
             const audioNode = instance.audioNode;
-            const gainNode = ctx.createGain();
-            gainNode.gain.value = parseFloat(slider?.value ?? 1);
+            gainNode = ctx.createGain();
+            gainNode.gain.value = parseFloat(slider?.value ?? 3);
             gainNode.connect(ctx.destination);
 
-            // Déconnecter le plugin de destination et le reconnecter via gainNode
-            try {
-                audioNode.disconnect(ctx.destination);
-            } catch (_) {}
+            try { audioNode.disconnect(ctx.destination); } catch (_) {}
+            try { audioNode.disconnect(); } catch (_) {}
             audioNode.connect(gainNode);
 
             slider?.addEventListener('input', (e) => {
