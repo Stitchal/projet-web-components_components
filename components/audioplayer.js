@@ -245,7 +245,49 @@ sheet.replaceSync(/* css */`
     }
 
     .playlist-item.active .playlist-item-index { color: #e8a020; }
+
+    .playlist-item-duration {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.56rem;
+        color: rgba(237, 233, 224, 0.35);
+        flex-shrink: 0;
+        min-width: 32px;
+        text-align: right;
+        letter-spacing: 0.04em;
+    }
+
+    .playlist-item.active .playlist-item-duration { color: rgba(232, 160, 32, 0.6); }
+
+    .playlist-item[draggable="true"] { cursor: grab; }
+    .playlist-item.active { cursor: pointer; }
+
+    .playlist-item.dragging { opacity: 0.4; }
+
+    .playlist-item.drag-over {
+        background: rgba(232, 160, 32, 0.12);
+        border-color: rgba(232, 160, 32, 0.35);
+    }
+
+    #playlist-footer {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.56rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(237, 233, 224, 0.28);
+        text-align: right;
+        padding: 4px 6px 0;
+        border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    #playlist-footer:empty { display: none; }
 `);
+
+function formatDuration(seconds) {
+    if (!isFinite(seconds)) return '--:--';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
 
 // BASE est calculé au niveau module — toutes les URLs d'images sont absolues.
 const html = /* html */`
@@ -284,6 +326,7 @@ const html = /* html */`
         </div>
     </div>
     <div id="playlist"></div>
+    <div id="playlist-footer"></div>
     <audio id="myplayer"></audio>
 </div>
 `;
@@ -313,6 +356,8 @@ class MyAudioPlayer extends ConnectableComponent {
     #currentIndex = 0;
     #tracks = [];
     #abortController = null;
+    #dragSrcIndex = null;
+    #loadGeneration = 0;
 
     static get observedAttributes() { return ['src', 'autoplay']; }
 
@@ -410,42 +455,16 @@ class MyAudioPlayer extends ConnectableComponent {
     }
 
     #buildPlaylist() {
-        const playlist    = this.shadowRoot.querySelector('#playlist');
-        const audioEl     = this.shadowRoot.querySelector('#myplayer');
-        const coverImage  = this.shadowRoot.querySelector('#coverImage');
+        const playlist   = this.shadowRoot.querySelector('#playlist');
+        const audioEl    = this.shadowRoot.querySelector('#myplayer');
+        const coverImage = this.shadowRoot.querySelector('#coverImage');
         if (!playlist) return;
 
-        // Vider la playlist avant de la reconstruire (au cas où src change)
         playlist.replaceChildren();
+        const gen = ++this.#loadGeneration;
 
         this.#tracks.forEach((track, index) => {
-            const item = document.createElement('div');
-            item.className = 'playlist-item';
-            item.dataset.index = index;
-
-            const cover = document.createElement('img');
-            cover.className = 'playlist-item-cover';
-            cover.src = track.cover || '';
-            cover.alt = track.title;
-
-            const info = document.createElement('div');
-            info.className = 'playlist-item-info';
-
-            const title = document.createElement('span');
-            title.className = 'playlist-item-title';
-            title.textContent = track.title;
-
-            const artist = document.createElement('span');
-            artist.className = 'playlist-item-artist';
-            artist.textContent = track.artist;
-
-            const idx = document.createElement('span');
-            idx.className = 'playlist-item-index';
-            idx.textContent = String(index + 1).padStart(2, '0');
-
-            info.append(title, artist);
-            item.append(cover, info, idx);
-            playlist.append(item);
+            playlist.append(this.#createPlaylistItem(track, index));
         });
 
         // Délégation d'événements sur la playlist
@@ -458,6 +477,97 @@ class MyAudioPlayer extends ConnectableComponent {
         if (this.#tracks.length > 0) {
             this.#selectTrack(0, audioEl, coverImage);
         }
+
+        this.#loadDurations(gen);
+    }
+
+    #createPlaylistItem(track, index) {
+        const item = document.createElement('div');
+        item.className = 'playlist-item';
+        item.dataset.index = index;
+        item.draggable = true;
+
+        const cover = document.createElement('img');
+        cover.className = 'playlist-item-cover';
+        cover.src = track.cover || '';
+        cover.alt = track.title;
+
+        const info = document.createElement('div');
+        info.className = 'playlist-item-info';
+
+        const title = document.createElement('span');
+        title.className = 'playlist-item-title';
+        title.textContent = track.title;
+
+        const artist = document.createElement('span');
+        artist.className = 'playlist-item-artist';
+        artist.textContent = track.artist;
+
+        const duration = document.createElement('span');
+        duration.className = 'playlist-item-duration';
+        duration.textContent = formatDuration(track.duration);
+
+        const idx = document.createElement('span');
+        idx.className = 'playlist-item-index';
+        idx.textContent = String(index + 1).padStart(2, '0');
+
+        info.append(title, artist);
+        item.append(cover, info, duration, idx);
+        return item;
+    }
+
+    async #loadDurations(gen) {
+        const promises = this.#tracks.map(track => new Promise(resolve => {
+            const a = new Audio();
+            a.addEventListener('loadedmetadata', () => resolve(a.duration), { once: true });
+            a.addEventListener('error', () => resolve(NaN), { once: true });
+            a.src = track.audio;
+        }));
+
+        const durations = await Promise.all(promises);
+
+        // Abandon si une nouvelle génération a été lancée (src changé entre-temps)
+        if (gen !== this.#loadGeneration) return;
+
+        durations.forEach((d, i) => { this.#tracks[i].duration = d; });
+        this.#renderDurations();
+        this.#renderTotalDuration();
+    }
+
+    #renderDurations() {
+        this.shadowRoot.querySelector('#playlist')
+            ?.querySelectorAll('.playlist-item-duration')
+            .forEach((span, i) => { span.textContent = formatDuration(this.#tracks[i]?.duration); });
+    }
+
+    #renderTotalDuration() {
+        const total = this.#tracks.reduce((s, t) => s + (isFinite(t.duration) ? t.duration : 0), 0);
+        const footer = this.shadowRoot.querySelector('#playlist-footer');
+        if (footer) footer.textContent = 'TOTAL — ' + formatDuration(total);
+    }
+
+    #reorderTracks(from, to) {
+        if (from === to || from == null || to == null) return;
+        const [moved] = this.#tracks.splice(from, 1);
+        this.#tracks.splice(to, 0, moved);
+        const cur = this.#currentIndex;
+        if      (cur === from)              this.#currentIndex = to;
+        else if (from < cur && to >= cur)   this.#currentIndex--;
+        else if (from > cur && to <= cur)   this.#currentIndex++;
+        this.#rebuildPlaylistDOM();
+    }
+
+    #rebuildPlaylistDOM() {
+        const playlist = this.shadowRoot.querySelector('#playlist');
+        if (!playlist) return;
+        playlist.replaceChildren();
+        this.#tracks.forEach((track, index) => {
+            const item = this.#createPlaylistItem(track, index);
+            if (index === this.#currentIndex) item.classList.add('active');
+            playlist.append(item);
+        });
+        playlist.querySelector('.playlist-item.active')?.scrollIntoView({ block: 'nearest' });
+        this.#renderTotalDuration();
     }
 
     #selectTrack(index, audioEl, coverImage) {
@@ -583,6 +693,45 @@ class MyAudioPlayer extends ConnectableComponent {
             let degrees = Math.atan2(y, x) * (180 / Math.PI) + 90;
             if (degrees < 0) degrees += 360;
             audioEl.currentTime = (degrees / 360) * audioEl.duration;
+        }, { signal });
+
+        // Drag & drop — réorganisation de la playlist
+        const playlistEl = this.shadowRoot.querySelector('#playlist');
+
+        playlistEl?.addEventListener('dragstart', (e) => {
+            const item = e.target.closest('.playlist-item');
+            if (!item) return;
+            this.#dragSrcIndex = parseInt(item.dataset.index, 10);
+            e.dataTransfer.effectAllowed = 'move';
+            item.classList.add('dragging');
+        }, { signal });
+
+        playlistEl?.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const target = e.target.closest('.playlist-item');
+            if (!target || target.classList.contains('dragging')) return;
+            playlistEl.querySelectorAll('.playlist-item.drag-over')
+                .forEach(el => el.classList.remove('drag-over'));
+            target.classList.add('drag-over');
+        }, { signal });
+
+        playlistEl?.addEventListener('dragleave', (e) => {
+            e.target.closest('.playlist-item')?.classList.remove('drag-over');
+        }, { signal });
+
+        playlistEl?.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const target = e.target.closest('.playlist-item');
+            if (!target) return;
+            const destIndex = parseInt(target.dataset.index, 10);
+            this.#reorderTracks(this.#dragSrcIndex, destIndex);
+        }, { signal });
+
+        playlistEl?.addEventListener('dragend', () => {
+            playlistEl.querySelectorAll('.dragging, .drag-over')
+                .forEach(el => el.classList.remove('dragging', 'drag-over'));
+            this.#dragSrcIndex = null;
         }, { signal });
     }
 }
