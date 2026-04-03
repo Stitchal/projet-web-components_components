@@ -6,13 +6,6 @@ sheet.replaceSync(/* css */`
 
     :host { display: block; width: 100%; height: 100%; }
 
-    canvas {
-        border-radius: 8px;
-        width: 100%;
-        height: 100%;
-        display: block;
-    }
-
     #container {
         font-family: 'Barlow Condensed', sans-serif;
         background: #11111c;
@@ -23,10 +16,12 @@ sheet.replaceSync(/* css */`
         height: 100%;
         width: 100%;
         display: flex;
-        align-items: center;
-        justify-content: center;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: stretch;
         position: relative;
         overflow: hidden;
+        gap: 6px;
     }
 
     #container::before {
@@ -36,29 +31,73 @@ sheet.replaceSync(/* css */`
         height: 1px;
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
     }
+
+    #modeBar {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .mode-btn {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 5px;
+        color: rgba(237,233,224,0.45);
+        cursor: pointer;
+        padding: 2px 8px;
+        font-family: 'Space Mono', monospace;
+        font-size: 8px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .mode-btn:hover {
+        background: rgba(232,160,32,0.12);
+        border-color: rgba(232,160,32,0.35);
+        color: #e8a020;
+    }
+
+    .mode-btn.active {
+        background: rgba(232,160,32,0.12);
+        border-color: rgba(232,160,32,0.4);
+        color: #e8a020;
+    }
+
+    #canvasWrap {
+        flex: 1;
+        min-height: 0;
+    }
+
+    canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 6px;
+    }
 `);
 
 const html = /* html */`
     <div id="container">
-        <canvas id="myCanvas"></canvas>
+        <div id="modeBar">
+            <button class="mode-btn active" data-mode="waveform">WAVE</button>
+            <button class="mode-btn" data-mode="spectrum">SPECTRUM</button>
+        </div>
+        <div id="canvasWrap">
+            <canvas id="myCanvas"></canvas>
+        </div>
     </div>
 `;
 
 /**
- * Composant visualiseur de forme d'onde en temps réel.
+ * DÉCISION DE DESIGN : composant AUTONOME
+ * AudioContext : singleton audioContext.js
+ * Raison : réutilisable via URI sans dépendance à un parent.
  *
- * ## Attributs HTML
- * - `color`    : couleur du tracé (défaut : #39e082)
- * - `fft-size` : taille FFT de l'analyseur (défaut : 1024, puissance de 2)
- *
- * ## Autonomie
- * Ce composant fonctionne seul : il récupère le singleton AudioContext,
- * construit un AnalyserNode et le connecte à ctx.destination (passthrough).
- * Il peut être inséré dans une chaîne via connectComponent() depuis un autre composant.
- *
- * ## Usage standalone
- * <my-waveform></my-waveform>
- * <my-waveform color="#e8a020" fft-size="2048"></my-waveform>
+ * @element my-waveform
+ * @attr {string} color - Couleur du tracé (défaut : #39e082)
+ * @attr {number} fft-size - Taille FFT puissance de 2 (défaut : 1024)
+ * @attr {"waveform"|"spectrum"} mode - Mode de visualisation (défaut : waveform)
  */
 class Waveform extends ConnectableComponent {
     #analyser = null;
@@ -68,10 +107,12 @@ class Waveform extends ConnectableComponent {
     #canvasCtx = null;
     #color = '#39e082';
     #fftSize = 1024;
+    #mode = 'waveform';
     #animating = false;
     #resizeObserver = null;
+    #abortController = null;
 
-    static get observedAttributes() { return ['color', 'fft-size']; }
+    static get observedAttributes() { return ['color', 'fft-size', 'mode']; }
 
     constructor() {
         super();
@@ -85,15 +126,25 @@ class Waveform extends ConnectableComponent {
         this.#canvas = this.shadowRoot.querySelector('#myCanvas');
         this.#canvasCtx = this.#canvas.getContext('2d');
 
-        // Synchroniser les dimensions internes du canvas avec son affichage CSS
         this.#resizeObserver = new ResizeObserver(() => {
             this.#canvas.width  = this.#canvas.offsetWidth  || 400;
             this.#canvas.height = this.#canvas.offsetHeight || 280;
         });
         this.#resizeObserver.observe(this.#canvas);
 
-        // Auto-init : graphe audio construit depuis le singleton AudioContext
         this.initAudioGraph();
+
+        this.#abortController = new AbortController();
+        const { signal } = this.#abortController;
+
+        this.shadowRoot.querySelector('#modeBar')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.mode-btn');
+            if (!btn) return;
+            this.#mode = btn.dataset.mode;
+            this.shadowRoot.querySelectorAll('.mode-btn').forEach(b =>
+                b.classList.toggle('active', b.dataset.mode === this.#mode)
+            );
+        }, { signal });
 
         this.#animating = true;
         requestAnimationFrame(() => this.#visualize());
@@ -103,8 +154,7 @@ class Waveform extends ConnectableComponent {
         if (oldVal === newVal) return;
         if (name === 'color') {
             this.#color = newVal;
-        }
-        if (name === 'fft-size') {
+        } else if (name === 'fft-size') {
             const size = parseInt(newVal, 10);
             if (!isNaN(size) && size >= 32) {
                 this.#fftSize = size;
@@ -113,6 +163,13 @@ class Waveform extends ConnectableComponent {
                     this.#bufferLength = this.#analyser.frequencyBinCount;
                     this.#dataArray = new Uint8Array(this.#bufferLength);
                 }
+            }
+        } else if (name === 'mode') {
+            if (newVal === 'waveform' || newVal === 'spectrum') {
+                this.#mode = newVal;
+                this.shadowRoot?.querySelectorAll('.mode-btn').forEach(b =>
+                    b.classList.toggle('active', b.dataset.mode === this.#mode)
+                );
             }
         }
     }
@@ -123,7 +180,6 @@ class Waveform extends ConnectableComponent {
         this.#bufferLength = this.#analyser.frequencyBinCount;
         this.#dataArray = new Uint8Array(this.#bufferLength);
 
-        // Connexion par défaut à ctx.destination (passthrough audio)
         this.#analyser.connect(this.audioCtx.destination);
         this._markConnectedToDestination();
     }
@@ -133,6 +189,8 @@ class Waveform extends ConnectableComponent {
 
     disconnectedCallback() {
         this.#animating = false;
+        this.#abortController?.abort();
+        this.#abortController = null;
         this.#resizeObserver?.disconnect();
         this.#resizeObserver = null;
         try { this.#analyser?.disconnect(); } catch (_) {}
@@ -144,46 +202,89 @@ class Waveform extends ConnectableComponent {
     #visualize() {
         if (!this.#animating) return;
 
-        // Attendre que l'analyseur soit prêt
         if (!this.#analyser) {
             requestAnimationFrame(() => this.#visualize());
             return;
         }
 
+        if (this.#mode === 'spectrum') {
+            this.#drawSpectrum();
+        } else {
+            this.#drawWaveform();
+        }
+
+        requestAnimationFrame(() => this.#visualize());
+    }
+
+    #drawWaveform() {
         const w = this.#canvas.width;
         const h = this.#canvas.height;
+        const ctx = this.#canvasCtx;
 
-        this.#canvasCtx.clearRect(0, 0, w, h);
-        this.#canvasCtx.fillStyle = '#0c0c16';
-        this.#canvasCtx.fillRect(0, 0, w, h);
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#0c0c16';
+        ctx.fillRect(0, 0, w, h);
 
         this.#analyser.getByteTimeDomainData(this.#dataArray);
 
         const color = this.#color;
-        // Extraire RGB pour la couleur de glow à partir d'une couleur hex ou laisser un défaut
         const glowColor = color.startsWith('#') && color.length === 7
             ? `rgba(${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)},0.5)`
             : 'rgba(57, 224, 130, 0.5)';
 
-        this.#canvasCtx.lineWidth = 1.5;
-        this.#canvasCtx.strokeStyle = color;
-        this.#canvasCtx.shadowBlur = 8;
-        this.#canvasCtx.shadowColor = glowColor;
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = glowColor;
 
-        this.#canvasCtx.beginPath();
+        ctx.beginPath();
         const sliceWidth = w / this.#bufferLength;
         let x = 0;
         for (let i = 0; i < this.#bufferLength; i++) {
             const v = this.#dataArray[i] / 255;
             const y = v * h;
-            if (i === 0) this.#canvasCtx.moveTo(x, y);
-            else         this.#canvasCtx.lineTo(x, y);
+            if (i === 0) ctx.moveTo(x, y);
+            else         ctx.lineTo(x, y);
             x += sliceWidth;
         }
-        this.#canvasCtx.stroke();
-        this.#canvasCtx.shadowBlur = 0;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+    }
 
-        requestAnimationFrame(() => this.#visualize());
+    #drawSpectrum() {
+        const w = this.#canvas.width;
+        const h = this.#canvas.height;
+        const ctx = this.#canvasCtx;
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#0c0c16';
+        ctx.fillRect(0, 0, w, h);
+
+        this.#analyser.getByteFrequencyData(this.#dataArray);
+
+        const barCount = this.#bufferLength;
+        const barWidth = w / barCount;
+        const color = this.#color;
+
+        // Extraire RGB pour le dégradé
+        const r = color.startsWith('#') && color.length === 7 ? parseInt(color.slice(1,3),16) : 57;
+        const g = color.startsWith('#') && color.length === 7 ? parseInt(color.slice(3,5),16) : 224;
+        const b = color.startsWith('#') && color.length === 7 ? parseInt(color.slice(5,7),16) : 130;
+
+        for (let i = 0; i < barCount; i++) {
+            const val = this.#dataArray[i] / 255;
+            const barH = val * h;
+            const x = i * barWidth;
+
+            // Dégradé vertical : couleur accent en bas, blanc en haut
+            const grad = ctx.createLinearGradient(0, h - barH, 0, h);
+            grad.addColorStop(0, `rgba(255,255,255,0.9)`);
+            grad.addColorStop(0.4, `rgba(${r},${g},${b},0.9)`);
+            grad.addColorStop(1,   `rgba(${r},${g},${b},0.3)`);
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, h - barH, Math.max(1, barWidth - 1), barH);
+        }
     }
 }
 

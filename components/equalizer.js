@@ -130,6 +130,13 @@ sheet.replaceSync(/* css */`
     div[class="input-range"] {
         display: none !important;
     }
+
+    webaudio-knob:focus-within,
+    webaudio-knob:focus {
+        outline: 2px solid var(--accent, #e8a020);
+        outline-offset: 3px;
+        border-radius: 4px;
+    }
 `);
 
 // BASE est calculé au niveau module — interpolation correcte même en usage distant.
