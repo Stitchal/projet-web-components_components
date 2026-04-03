@@ -4,10 +4,8 @@ import {ConnectableComponent} from "./ConnectableComponent.js";
 const butterchurnModule = await import('https://cdn.skypack.dev/butterchurn@2.6.7');
 const butterchurnPresetsModule = await import('https://cdn.skypack.dev/butterchurn-presets@2.4.7');
 
-const createVisualizer = butterchurnModule.default?.createVisualizer
-    ?? butterchurnModule.createVisualizer;
-const getPresets = butterchurnPresetsModule.default?.getPresets
-    ?? butterchurnPresetsModule.getPresets;
+const createVisualizer = butterchurnModule.default?.createVisualizer ?? butterchurnModule.createVisualizer;
+const getPresets = butterchurnPresetsModule.default?.getPresets ?? butterchurnPresetsModule.getPresets;
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(/* css */`
     * { box-sizing: border-box; }
@@ -31,18 +29,21 @@ sheet.replaceSync(/* css */`
         content: '';
         position: absolute;
         top: 0; left: 20%; right: 20%;
-        height: 1px;
+        // height: 1px;
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
     }
     #canvasWrapper {
-    width: 550px;
+    width: 100%;
     aspect-ratio: 4/3;
     border-radius: 8px;
     overflow: hidden;
     min-height: 300px;
-    display: flex;
-    flex-direction: column;
-}`);
+    }
+    #myCanvas {
+    position: absolute;
+    width: 100%;
+    }
+`);
 
 const html = `
     <div id="container">
