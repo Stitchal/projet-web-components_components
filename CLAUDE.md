@@ -46,6 +46,78 @@ class AudioPlayer extends HTMLElement {
 }
 ```
 
+### Paramétrage via attributs HTML
+
+Chaque composant **doit documenter explicitement ses attributs HTML** dans un commentaire JSDoc en tête de fichier :
+
+```javascript
+/**
+ * @element audio-player
+ * @attr {string} src - URL de la piste audio à charger
+ * @attr {boolean} autoplay - Lance la lecture automatiquement
+ * @attr {number} volume - Volume initial (0.0 à 1.0, défaut : 1.0)
+ *
+ * @fires track-changed - Quand la piste change ({ detail: { track, index } })
+ * @fires playback-state - Quand play/pause change ({ detail: { playing } })
+ *
+ * @prop {string} src - Équivalent de l'attribut src
+ * @prop {AudioNode} outputNode - Nœud de sortie Web Audio pour branchement externe
+ */
+class AudioPlayer extends HTMLElement {
+  static get observedAttributes() { return ['src', 'autoplay', 'volume']; }
+}
+```
+
+Règles pour les attributs :
+- Toujours déclarer dans `observedAttributes` les attributs qui doivent réagir à des changements
+- Synchroniser attribut ↔ propriété JS (`get`/`set`) pour les valeurs pilotables depuis JS
+- Les valeurs booléennes suivent la convention HTML : présence = `true`, absence = `false`
+
+### Décisions de design : composants imbriquables ou autonomes ?
+
+**Avant de créer un composant**, décider et documenter explicitement s'il est :
+
+| Mode | Description | Quand l'utiliser |
+|------|-------------|-----------------|
+| **Autonome** | S'importe seul via URI, gère lui-même ses dépendances (AudioContext via singleton) | Composants réutilisables dans n'importe quel projet tiers |
+| **Imbriqué** | Conçu pour vivre à l'intérieur d'un composant parent qui lui fournit le contexte audio | Sous-composants fortement liés à un parent (ex: visualiseur interne à un player) |
+
+Documenter la décision dans le fichier du composant et dans `history.md` :
+
+```javascript
+/**
+ * DÉCISION DE DESIGN : composant AUTONOME
+ * Raison : réutilisable dans tout projet tiers via URI, sans dépendance à un parent spécifique.
+ * AudioContext : importé depuis le singleton audioContext.js.
+ * Alternative écartée : composant imbriqué — trop couplé au projet parent.
+ */
+```
+
+```javascript
+/**
+ * DÉCISION DE DESIGN : composant IMBRIQUÉ (enfant de <audio-player>)
+ * Raison : ce composant n'a de sens qu'en présence d'un nœud audio fourni par le parent.
+ * AudioContext : reçu via la propriété JS `audioContext` injectée par le parent.
+ * Alternative écartée : autonome — nécessiterait de dupliquer la logique de source audio.
+ */
+```
+
+### Utilisation via URI distante (hébergement séparé)
+
+Les composants sont conçus pour être **hébergés séparément** du projet qui les consomme. Un projet tiers doit pouvoir les utiliser sans installation locale, via un simple import :
+
+```html
+<!-- Dans n'importe quelle page HTML tierce -->
+<script type="module" src="https://cdn.example.com/components/AudioPlayer.js"></script>
+<audio-player src="https://example.com/audio/track.mp3"></audio-player>
+```
+
+Pour garantir cette portabilité :
+- **Aucun chemin relatif** vers des ressources extérieures au composant (images, fonts, etc.) — utiliser des URLs absolues ou des `import.meta.url` relatifs au fichier
+- **Aucun import de module** qui suppose une structure de projet spécifique — les modules partagés (ex: `audioContext.js`) doivent être importés via URL absolue configurable ou re-exportés depuis le composant lui-même
+- Les **styles** sont encapsulés dans le Shadow DOM — aucune feuille de style globale requise
+- Les **assets statiques** référencés (sons, icônes) doivent être accessibles via URL absolue passée en attribut, jamais codés en dur avec un chemin relatif
+
 ### Encapsulation via Shadow DOM
 
 ```javascript
@@ -332,3 +404,7 @@ Le dossier `.agents/skills/` contient des **skills spécialisés** avec des règ
 - [ ] `disconnectedCallback` nettoie les event listeners et les nœuds audio
 - [ ] `history.md` mis à jour
 - [ ] Checklists des skills pertinents validées
+- [ ] Chaque composant documente ses attributs HTML dans un commentaire JSDoc en tête de fichier
+- [ ] La décision autonome/imbriqué est documentée dans le fichier du composant et dans `history.md`
+- [ ] Le partage du `AudioContext` est explicite : singleton (autonome) ou injection par le parent (imbriqué)
+- [ ] Aucun chemin relatif vers une ressource externe au composant — portabilité via URI garantie
