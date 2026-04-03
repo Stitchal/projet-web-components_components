@@ -174,7 +174,17 @@ main {
 
 /* ── Boutons macOS ───────────────────────────────────────────── */
 
-.titlebar-dot { display: none; }
+.titlebar-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    flex-shrink: 0;
+}
+
+.window:hover .titlebar-dot {
+    background: rgba(255,255,255,0.22);
+}
 
 .titlebar-controls {
     display: flex;
