@@ -395,6 +395,53 @@ Le dossier `.agents/skills/` contient des **skills spécialisés** avec des règ
 
 ---
 
+## 7. Documentation de l'API — SPECIFICATION.md
+
+**Fichier :** `SPECIFICATION.md` (à la racine du projet)
+
+Ce fichier documente l'API publique de chaque composant : tag HTML, attributs, propriétés JS, méthodes, événements émis et écoutés, partage du contexte audio, et exemples d'intégration.
+
+### Règle de maintenance
+
+**`SPECIFICATION.md` doit être mis à jour dès qu'un composant est modifié.** Cela inclut :
+
+- Ajout ou suppression d'un **attribut HTML** (`observedAttributes`)
+- Ajout ou suppression d'une **propriété JS publique** (getter/setter exposé)
+- Ajout ou suppression d'une **méthode publique**
+- Changement d'un **événement émis** (nom, `detail`, cible)
+- Changement d'un **événement écouté** (nom, comportement)
+- Changement du **mode de partage du contexte audio** (singleton ↔ injection)
+- Changement de la **décision autonome/imbriqué**
+- **Création d'un nouveau composant** → ajouter une section complète
+
+### Structure de chaque section composant dans SPECIFICATION.md
+
+```markdown
+## `<mon-composant>`
+
+**Fichier :** `components/MonComposant.js`
+**Tag :** `mon-composant`
+**Étend :** `ConnectableComponent` | `HTMLElement`
+**Décision de design :** Autonome | Imbriqué — raison en une phrase.
+
+### Attributs HTML
+| Attribut | Type | Défaut | Description |
+
+### Propriétés JS exposées
+| Propriété | Type | Accès | Description |
+
+### Méthodes publiques
+| Méthode | Signature | Description |
+
+### Événements émis
+| Événement | Émis sur | detail | Description |
+
+### Événements écoutés
+| Événement | Écouté sur | detail | Description |
+```
+
+---
+
 ## Checklist avant chaque commit
 
 - [ ] Aucun `new AudioContext()` en dehors de `src/modules/audioContext.js`
@@ -408,3 +455,4 @@ Le dossier `.agents/skills/` contient des **skills spécialisés** avec des règ
 - [ ] La décision autonome/imbriqué est documentée dans le fichier du composant et dans `history.md`
 - [ ] Le partage du `AudioContext` est explicite : singleton (autonome) ou injection par le parent (imbriqué)
 - [ ] Aucun chemin relatif vers une ressource externe au composant — portabilité via URI garantie
+- [ ] `SPECIFICATION.md` mis à jour si un attribut, propriété, méthode ou événement a changé
