@@ -3,22 +3,22 @@
 /* ── Thèmes ──────────────────────────────────────────────── */
 
 :root {
-    --bg-page:       #08080f;
-    --bg-component:  #11111c;
-    --bg-titlebar:   #17172a;
-    --bg-input:      rgba(255,255,255,0.04);
-    --border:        rgba(255, 255, 255, 0.07);
-    --border-top:    rgba(255, 255, 255, 0.12);
-    --text:          #ede9e0;
-    --text-dim:      rgba(237, 233, 224, 0.38);
-    --text-faint:    rgba(237, 233, 224, 0.3);
-    --accent:        #e8a020;
-    --accent-glow:   rgba(232, 160, 32, 0.7);
-    --accent-bg:     rgba(232, 160, 32, 0.08);
-    --btn-hover-bg:  rgba(232, 160, 32, 0.15);
+    --bg-page: #08080f;
+    --bg-component: #11111c;
+    --bg-titlebar: #17172a;
+    --bg-input: rgba(255, 255, 255, 0.04);
+    --border: rgba(255, 255, 255, 0.07);
+    --border-top: rgba(255, 255, 255, 0.12);
+    --text: #ede9e0;
+    --text-dim: rgba(237, 233, 224, 0.38);
+    --text-faint: rgba(237, 233, 224, 0.3);
+    --accent: #e8a020;
+    --accent-glow: rgba(232, 160, 32, 0.7);
+    --accent-bg: rgba(232, 160, 32, 0.08);
+    --btn-hover-bg: rgba(232, 160, 32, 0.15);
     --btn-hover-border: rgba(232, 160, 32, 0.4);
-    --ring-bg:       #1a1a2a;
-    --cover-border:  #0d0d17;
+    --ring-bg: #1a1a2a;
+    --cover-border: #0d0d17;
 }
 
 
@@ -50,7 +50,9 @@ body {
     opacity: 0;
 }
 
-#bg.has-cover { opacity: 1; }
+#bg.has-cover {
+    opacity: 1;
+}
 
 /* ── Bouton plein écran ──────────────────────────────────── */
 
@@ -86,6 +88,11 @@ main {
     inset: 0;
     z-index: 1;
     overflow: hidden;
+    display: flex;
+    columns: max-content;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 24px;
 }
 
 /* ── Fenêtres draggables ─────────────────────────────────── */
@@ -174,7 +181,9 @@ main {
 
 /* ── Boutons macOS ───────────────────────────────────────────── */
 
-.titlebar-dot { display: none; }
+.titlebar-dot {
+    display: none;
+}
 
 .titlebar-controls {
     display: flex;
@@ -203,7 +212,7 @@ main {
     font-size: 8px;
     line-height: 1;
     font-weight: 700;
-    color: rgba(0,0,0,0.5);
+    color: rgba(0, 0, 0, 0.5);
     opacity: 0;
     transition: opacity 0.1s;
     font-family: sans-serif;
@@ -215,7 +224,7 @@ main {
 
 .titlebar-btn-close {
     background: #ff5f57;
-    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2);
 }
 
 .titlebar-btn-close::after {
@@ -224,7 +233,7 @@ main {
 
 .titlebar-btn-min {
     background: #febc2e;
-    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2);
 }
 
 .titlebar-btn-min::after {
@@ -233,7 +242,7 @@ main {
 
 .titlebar-btn-max {
     background: #28c840;
-    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2);
 }
 
 .titlebar-btn-max::after {
@@ -314,4 +323,10 @@ main {
 .wam-container wam-plugin {
     display: block;
     width: 100%;
+}
+
+/*butterchurn style */
+#win-butterchurn {
+    top: 470px;
+    left: 450px;
 }

@@ -33,7 +33,16 @@ sheet.replaceSync(/* css */`
         top: 0; left: 20%; right: 20%;
         height: 1px;
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    }`);
+    }
+    #canvasWrapper {
+    width: 550px;
+    aspect-ratio: 4/3;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+}`);
 
 const html = `
     <div id="container">
