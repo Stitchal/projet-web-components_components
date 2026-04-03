@@ -358,6 +358,10 @@ class MyAudioPlayer extends ConnectableComponent {
     getInputNode()  { return this.sourceNode; }
     getOutputNode() { return this.outputNode; }
 
+    get currentTrack() {
+        return this.#tracks[this.#currentIndex] ?? null;
+    }
+
     disconnectedCallback() {
         this.#vuAnimating = false;
         this.#abortController?.abort();
