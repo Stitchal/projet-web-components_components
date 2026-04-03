@@ -1,5 +1,5 @@
 import "./libs/webaudiocontrols.js";
-import { ConnectableComponent } from "./ConnectableComponent.js";
+import {ConnectableComponent} from "./ConnectableComponent.js";
 
 // Résolution des chemins d'images relative au fichier composant via import.meta.url.
 // Permet l'hébergement distant : l'URL est calculée depuis ce fichier JS,
@@ -214,11 +214,13 @@ class Equalizer extends ConnectableComponent {
     #filters = [];
     #abortController = null;
 
-    static get observedAttributes() { return ['preset']; }
+    static get observedAttributes() {
+        return ['preset'];
+    }
 
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
+        this.attachShadow({mode: 'open'});
     }
 
     connectedCallback() {
@@ -259,13 +261,21 @@ class Equalizer extends ConnectableComponent {
         this._markConnectedToDestination();
     }
 
-    getInputNode()  { return this.#filters[0]; }
-    getOutputNode() { return this.#filters.at(-1); }
+    getInputNode() {
+        return this.#filters[0];
+    }
+
+    getOutputNode() {
+        return this.#filters.at(-1);
+    }
 
     disconnectedCallback() {
         this.#abortController?.abort();
         this.#abortController = null;
-        try { this.#filters.forEach(f => f.disconnect()); } catch (_) {}
+        try {
+            this.#filters.forEach(f => f.disconnect());
+        } catch (_) {
+        }
         this.#filters = [];
         super.disconnectedCallback();
     }
@@ -293,7 +303,7 @@ class Equalizer extends ConnectableComponent {
 
     #defineListeners() {
         this.#abortController = new AbortController();
-        const { signal } = this.#abortController;
+        const {signal} = this.#abortController;
 
         // Knobs → filtres directement (sans passer par les input[range] cachés)
         for (let i = 0; i < 6; i++) {
@@ -308,7 +318,7 @@ class Equalizer extends ConnectableComponent {
                     display.textContent = db.toFixed(1) + ' dB';
                     display.classList.toggle('active', db !== 0);
                 }
-            }, { signal });
+            }, {signal});
         }
 
         // Presets
@@ -318,7 +328,7 @@ class Equalizer extends ConnectableComponent {
             this.#applyPreset(btn.dataset.preset);
             this.shadowRoot.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-        }, { signal });
+        }, {signal});
     }
 }
 

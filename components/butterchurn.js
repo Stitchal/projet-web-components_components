@@ -1,107 +1,220 @@
 import "./libs/webaudiocontrols.js";
-import { ConnectableComponent } from "./ConnectableComponent.js";
-import { createVisualizer } from 'butterchurn';
-import { getPresets } from 'butterchurn-presets';
+import {ConnectableComponent} from "./ConnectableComponent.js";
 
-const style = `
-<style>
-    canvas {
-        border: 1px solid black;
-        background-color: #f0f0f0;
-    }
+const butterchurnModule = await import('https://cdn.skypack.dev/butterchurn@2.6.7');
+const butterchurnPresetsModule = await import('https://cdn.skypack.dev/butterchurn-presets@2.4.7');
+
+const createVisualizer = butterchurnModule.default?.createVisualizer
+    ?? butterchurnModule.createVisualizer;
+const getPresets = butterchurnPresetsModule.default?.getPresets
+    ?? butterchurnPresetsModule.getPresets;
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(/* css */`
+    * { box-sizing: border-box; }
+
+    :host { display: block; width: 100%; height: 100%; }
+
     #container {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #3D68CC; /* Requested Primary Color */
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(61, 104, 204, 0.4);
-    margin: 0 auto;
-    color: white;
-    height: 300px;
-    width: 400px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-</style>
-`;
+        font-family: 'Barlow Condensed', sans-serif;
+        background: var(--bg-component, #11111c);
+        border: 1px solid var(--border, rgba(255,255,255,0.07));
+        border-top-color: var(--border-top, rgba(255,255,255,0.12));
+        padding: 10px;
+        border-radius: 0 0 14px 14px;
+        color: var(--text, #ede9e0);
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 20%; right: 20%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }`);
 
 const html = `
     <div id="container">
-        <canvas id="myCanvas" width=300 height=100></canvas>
+    <div id="presets"></div>
+<!--        <canvas id="myCanvas" width=300 height=100></canvas>-->
     </div>
 `;
 
 class Butterchurn extends ConnectableComponent {
+    #gainNode = null;
+    #visualizer = null;
+    #presets = {};
+    #presetNames = [];
+    #currentIndex = 0;
+    #animating = false;
+    #rafId = null;
+    #blendTime = 2.0;
+    #abortController = null;
+    #connectedToPlayer = false;
+    #analyser = null;
+    #analyserData = null;
+    #isPlaying = false;
+
+    static get observedAttributes() {
+        return ['blend'];
+    }
+
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
-        this.audioplayerSelector = this.getAttribute('audioplayer');
-        this.audioCtx = null;
-        this.canvas = null;
-        this.width = null;
-        this.height = null;
-        this.canvasContext = null;
-        this.gainNode = null;
+        this.attachShadow({mode: 'open'});
     }
 
     connectedCallback() {
-        this.shadowRoot.innerHTML = style + html;
-        this.canvas = this.shadowRoot.querySelector("#myCanvas");
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
+        this.shadowRoot.adoptedStyleSheets = [sheet];
+
+        const blendAttr = this.getAttribute('blend');
+        if (blendAttr) this.#blendTime = parseFloat(blendAttr) || 2.0;
+
+        this.#buildDOM();
+
+        this.initAudioGraph();
+
+        this.#setupVisualizer();
+        this.#defineListeners();
+        requestAnimationFrame(() => {
+            const player = document.querySelector('my-audio-player');
+            if (player) {
+                player.connectComponent(this);
+                const audio = player.shadowRoot?.querySelector('#myplayer');
+                if (audio && !audio.paused) this.#isPlaying = true;
+            }
+        });
     }
 
-buildAudioGraph() {
-    this.gainNode = this.audioCtx.createGain();
-
-    // ERROR FIX: We now use the imported function directly
-    if (typeof createVisualizer !== 'function') {
-        console.error("createVisualizer is not a function.");
-        return;
+    attributeChangedCallback(name, oldVal, newVal) {
+        if (oldVal === newVal) return;
+        if (name === 'blend') this.#blendTime = parseFloat(newVal) || 2.0;
     }
 
-    this.visualizer = createVisualizer(this.audioCtx, this.canvas, {
-        width: 800,
-        height: 600
-    });
-
-    this.visualizer.connectAudio(this.gainNode);
-
-    // ERROR FIX: Use the imported getPresets function directly
-    const actualPresets = getPresets();
-    const presetNames = Object.keys(actualPresets);
-    
-    if (presetNames.length > 0) {
-        this.visualizer.loadPreset(actualPresets[presetNames[0]], 0.0);
+    #buildDOM() {
+        const tpl = document.createElement('template');
+        tpl.setHTMLUnsafe(/* html */`
+            <div id="container">
+                <div id="canvasWrapper">
+                    <canvas id="myCanvas"></canvas>
+                </div>
+            </div>
+        `);
+        this.shadowRoot.append(tpl.content.cloneNode(true));
     }
 
-    this.renderFrame();
-}
+    buildAudioGraph() {
+        this.#gainNode = this.audioCtx.createGain();
+        this.#gainNode.gain.value = 1;
+        this.#analyser = this.audioCtx.createAnalyser();
+        this.#gainNode.connect(this.#analyser);
+        this.#analyser.connect(this.audioCtx.destination);
+        this._markConnectedToDestination();
+    }
 
-    // TODO
     getInputNode() {
-        return this.gainNode;
+        return this.#gainNode;
     }
 
-    // TODO
     getOutputNode() {
-        return this.gainNode;
+        return this.#analyser;
     }
 
-    visualize() {
-        // load a preset
-        const presets = butterchurnPresets.getPresets();
-        const preset = presets['Flexi, martin + geiss - dedicated to the sherwin maxawow'];
+    #setupVisualizer() {
+        const canvas = this.shadowRoot.querySelector('#myCanvas');
+        const wrapper = this.shadowRoot.querySelector('#canvasWrapper');
 
-        this.visualizer.loadPreset(preset, 0.0); // 2nd argument is the number of seconds to blend presets
+        // Dimensionner le canvas sur son wrapper rendu
+        const w = wrapper.clientWidth || 400;
+        const h = wrapper.clientHeight || 300;
+        canvas.width = w;
+        canvas.height = h;
 
-        // resize visualizer
+        if (typeof createVisualizer !== 'function') {
+            console.error('my-butterchurn: createVisualizer introuvable');
+            return;
+        }
 
-        this.visualizer.setRendererSize(1600, 1200);
-        // render a frame
+        this.#visualizer = createVisualizer(this.audioCtx, canvas, {width: w, height: h});
+        this.#visualizer.connectAudio(this.#gainNode);
 
-        this.visualizer.render();
+        try {
+            this.#presets = getPresets();
+            this.#presetNames = Object.keys(this.#presets);
+        } catch (err) {
+            console.warn('my-butterchurn: impossible de charger les presets', err);
+        }
+
+        // Preset aléatoire au démarrage
+        this.#currentIndex = Math.floor(Math.random() * this.#presetNames.length);
+        this.#applyCurrentPreset(0.0);
+        this.#updatePresetLabel();
+
+        // Boucle de rendu
+        this.#animating = true;
+        this.#visualizer.render();
+        this.#renderFrame();
+    }
+
+    #renderFrame() {
+        if (!this.#animating || !this.#visualizer) return;
+        const player = document.querySelector('my-audio-player');
+        const audio = player?.shadowRoot?.querySelector('#myplayer');
+        const isPlaying = audio ? !audio.paused && !audio.ended : false;
+
+        if (isPlaying) {
+            this.#visualizer.render();
+        }
+        this.#rafId = requestAnimationFrame(() => this.#renderFrame());
+    }
+
+    #applyCurrentPreset(blend = null) {
+        if (!this.#visualizer || !this.#presetNames.length) return;
+        const preset = this.#presets[this.#presetNames[this.#currentIndex]];
+        this.#visualizer.loadPreset(preset, blend ?? this.#blendTime);
+        this.#updatePresetLabel();
+    }
+
+    #updatePresetLabel() {
+        const el = this.shadowRoot?.querySelector('#presetName');
+        if (el) el.textContent = this.#presetNames[this.#currentIndex] ?? '—';
+    }
+
+    #defineListeners() {
+        this.#abortController = new AbortController();
+        const {signal} = this.#abortController;
+        document.addEventListener('track-changed', () => {
+            const player = document.querySelector('my-audio-player');
+            if (player && !this.#connectedToPlayer) {
+                player.connectComponent(this);
+                this.#connectedToPlayer = true;
+                const audio = player.shadowRoot?.querySelector('#myplayer');
+                if (audio && !audio.paused) this.#isPlaying = true;
+            }
+        }, {signal});
+        document.addEventListener('audio-play', () => {
+            this.#isPlaying = true;
+        }, {signal});
+        document.addEventListener('audio-pause', () => {
+            this.#isPlaying = false;
+        }, {signal});
+    }
+
+    disconnectedCallback() {
+        this.#animating = false;
+        if (this.#rafId) cancelAnimationFrame(this.#rafId);
+        this.#rafId = null;
+        this.#abortController?.abort();
+        this.#abortController = null;
+        try {
+            this.#gainNode?.disconnect();
+        } catch (_) {
+        }
+        this.#gainNode = null;
+        this.#visualizer = null;
+        super.disconnectedCallback();
     }
 }
 
