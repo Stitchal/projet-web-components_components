@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Studio — Lecteur Audio</title>
-    <!-- <script type="importmap">
-    {
-        "imports": {
-            "butterchurn": "https://esm.sh/butterchurn@2.6.7",
-            "butterchurn-presets": "https://esm.sh/butterchurn-presets@2.4.7"
-        }
-    }
-    </script> -->
+    <!--    <script type="importmap">-->
+    <!--    {-->
+    <!--        "imports": {-->
+    <!--            "butterchurn": "https://esm.sh/butterchurn@2.6.7",-->
+    <!--            "butterchurn-presets": "https://esm.sh/butterchurn-presets@2.4.7"-->
+    <!--        }-->
+    <!--    }-->
+    <!--    </script>-->
 
     <!--
       Composants autonomes — chargement via URI locale ou distante.
@@ -36,67 +36,71 @@
     <script src="./components/waveform.js" type="module"></script>
     <script type="module" src="https://mainline.i3s.unice.fr/wam_wc/wam-host/wamHost.js"></script>
     <script type="module" src="https://mainline.i3s.unice.fr/wam_wc/wam-plugin/wamPlugin.js"></script>
-    <!-- <script src="./components/butterchurn.js" type="module"></script> -->
+    <script src="./components/butterchurn.js" type="module"></script>
     <!-- script.js est optionnel : câble la chaîne studio et active les fenêtres draggables -->
     <script src="js/script.js" type="module"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700&display=swap">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700&display=swap">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
-    <div id="bg"></div>
-    <button id="fullscreen-btn" title="Plein écran">⛶</button>
-    <main>
-        <div class="window" id="win-player" data-no-resize>
-            <div class="titlebar"><span class="titlebar-dot"></span>PLAYER</div>
-            <!--
-              src : URL du JSON de playlist (défaut : assets/tracks.json relatif au composant)
-              autoplay : présence de l'attribut → lecture automatique
-            -->
-            <my-audio-player id="player" src="./assets/tracks.json"></my-audio-player>
+<div id="bg"></div>
+<button id="fullscreen-btn" title="Plein écran">⛶</button>
+<main>
+    <div class="window" id="win-player" data-no-resize>
+        <div class="titlebar"><span class="titlebar-dot"></span>PLAYER</div>
+        <!--
+          src : URL du JSON de playlist (défaut : assets/tracks.json relatif au composant)
+          autoplay : présence de l'attribut → lecture automatique
+        -->
+        <my-audio-player id="player" src="./assets/tracks.json"></my-audio-player>
+    </div>
+    <div class="window" id="win-playlist">
+        <div class="titlebar"><span class="titlebar-dot"></span>PLAYLIST</div>
+        <my-playlist id="playlist"></my-playlist>
+    </div>
+    <div class="window" id="win-eq" data-no-resize>
+        <div class="titlebar"><span class="titlebar-dot"></span>EQUALIZER</div>
+        <!--
+          preset : gains dB séparés par virgule pour les 6 bandes
+                   (60Hz, 170Hz, 350Hz, 1kHz, 3.5kHz, 10kHz)
+                   ex. preset="-6,0,3,3,0,-3"
+        -->
+        <my-eq id="eq" preset="0,0,0,0,0,0"></my-eq>
+    </div>
+    <div class="window" id="win-waveform">
+        <div class="titlebar"><span class="titlebar-dot"></span>WAVEFORM</div>
+        <!--
+          color    : couleur du tracé (défaut : #39e082)
+          fft-size : taille FFT de l'analyseur, puissance de 2 (défaut : 1024)
+        -->
+        <my-waveform id="waveform" color="#39e082" fft-size="1024"></my-waveform>
+    </div>
+    <div class="window" id="win-butterchurn">
+        <div class="titlebar"><span class="titlebar-dot">here</span>VISUALIZER BUTTERCHURN</div>
+        <my-butterchurn id="butterchurn" color="#39e082" fft-size="1024"></my-butterchurn>
+    </div>
+    <div class="window" id="win-wam" data-resize="x">
+        <div class="titlebar">
+            <span class="titlebar-dot"></span>PIANO
+            <label class="wam-volume-label">
+                VOL
+                <input type="range" id="wam-volume" min="0" max="6" step="0.01" value="3">
+                <span id="wam-volume-display">100%</span>
+            </label>
         </div>
-        <div class="window" id="win-playlist">
-            <div class="titlebar"><span class="titlebar-dot"></span>PLAYLIST</div>
-            <my-playlist id="playlist"></my-playlist>
-        </div>
-        <div class="window" id="win-eq" data-no-resize>
-            <div class="titlebar"><span class="titlebar-dot"></span>EQUALIZER</div>
-            <!--
-              preset : gains dB séparés par virgule pour les 6 bandes
-                       (60Hz, 170Hz, 350Hz, 1kHz, 3.5kHz, 10kHz)
-                       ex. preset="-6,0,3,3,0,-3"
-            -->
-            <my-eq id="eq" preset="0,0,0,0,0,0"></my-eq>
-        </div>
-        <div class="window" id="win-waveform">
-            <div class="titlebar"><span class="titlebar-dot"></span>WAVEFORM</div>
-            <!--
-              color    : couleur du tracé (défaut : #39e082)
-              fft-size : taille FFT de l'analyseur, puissance de 2 (défaut : 1024)
-            -->
-            <my-waveform id="waveform" color="#39e082" fft-size="1024"></my-waveform>
-        </div>
-        <!-- <my-butterchurn id="butterchurn"></my-butterchurn> -->
-        <div class="window" id="win-wam" data-resize="x">
-            <div class="titlebar">
-                <span class="titlebar-dot"></span>PIANO
-                <label class="wam-volume-label">
-                    VOL
-                    <input type="range" id="wam-volume" min="0" max="6" step="0.01" value="3">
-                    <span id="wam-volume-display">100%</span>
-                </label>
-            </div>
-            <div class="wam-container">
-                <wam-host>
-                    <wam-plugin
+        <div class="wam-container">
+            <wam-host>
+                <wam-plugin
                         src="https://www.webaudiomodules.com/community/plugins/burns-audio/soundfont/index.js"
-                    ></wam-plugin>
-                </wam-host>
-            </div>
+                ></wam-plugin>
+            </wam-host>
         </div>
-    </main>
+    </div>
+</main>
 </body>
 
 </html>

@@ -301,6 +301,7 @@ class MyPlaylist extends HTMLElement {
         this.shadowRoot.adoptedStyleSheets = [sheet];
         this.shadowRoot.setHTMLUnsafe(html);
         this.#defineListeners();
+        document.dispatchEvent(new CustomEvent('playlist-ready'));
     }
 
     disconnectedCallback() {

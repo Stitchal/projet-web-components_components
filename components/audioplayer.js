@@ -1,6 +1,6 @@
 import "./libs/webaudiocontrols.js";
-import { ConnectableComponent } from "./ConnectableComponent.js";
-import { resumeAudioContext } from "./modules/audioContext.js";
+import {ConnectableComponent} from "./ConnectableComponent.js";
+import {resumeAudioContext} from "./modules/audioContext.js";
 
 const BASE = new URL('.', import.meta.url).href;
 
@@ -354,11 +354,13 @@ class MyAudioPlayer extends ConnectableComponent {
     #shuffle = false;
     #repeat = false;
 
-    static get observedAttributes() { return ['src', 'autoplay']; }
+    static get observedAttributes() {
+        return ['src', 'autoplay'];
+    }
 
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
+        this.attachShadow({mode: 'open'});
     }
 
     connectedCallback() {
@@ -427,9 +429,9 @@ class MyAudioPlayer extends ConnectableComponent {
     buildAudioGraph() {
         const audioElement = this.shadowRoot.querySelector('#myplayer');
         this.sourceNode = this.audioCtx.createMediaElementSource(audioElement);
-        this.gain       = this.audioCtx.createGain();
-        this.panner     = this.audioCtx.createStereoPanner();
-        this.#analyser  = this.audioCtx.createAnalyser();
+        this.gain = this.audioCtx.createGain();
+        this.panner = this.audioCtx.createStereoPanner();
+        this.#analyser = this.audioCtx.createAnalyser();
         this.#analyser.fftSize = 64;
         this.outputNode = this.audioCtx.createGain();
 
@@ -460,21 +462,20 @@ class MyAudioPlayer extends ConnectableComponent {
             this.panner?.disconnect();
             this.#analyser?.disconnect();
             this.outputNode?.disconnect();
-        } catch (_) {}
-        this.sourceNode  = null;
-        this.gain        = null;
-        this.panner      = null;
-        this.#analyser   = null;
-        this.outputNode  = null;
+        } catch (_) {
+        }
+        this.sourceNode = null;
+        this.gain = null;
+        this.panner = null;
+        this.#analyser = null;
+        this.outputNode = null;
         super.disconnectedCallback();
     }
 
     // --- Tracks ---
 
     async #loadTracks(srcAttr) {
-        const tracksUrl = srcAttr
-            ? new URL(srcAttr, document.baseURI).href
-            : new URL('../assets/tracks.json', import.meta.url).href;
+        const tracksUrl = srcAttr ? new URL(srcAttr, document.baseURI).href : new URL('../assets/tracks.json', import.meta.url).href;
 
         try {
             const response = await fetch(tracksUrl);
@@ -485,7 +486,7 @@ class MyAudioPlayer extends ConnectableComponent {
                 cover: t.cover ? new URL(t.cover, document.baseURI).href : null,
             }));
 
-            const audioEl    = this.shadowRoot.querySelector('#myplayer');
+            const audioEl = this.shadowRoot.querySelector('#myplayer');
             const coverImage = this.shadowRoot.querySelector('#coverImage');
             if (this.#tracks.length > 0) {
                 this.#selectTrack(0, audioEl, coverImage);
@@ -512,14 +513,17 @@ class MyAudioPlayer extends ConnectableComponent {
             }
         }
 
-        const titleEl  = this.shadowRoot.querySelector('#trackTitle');
+        const titleEl = this.shadowRoot.querySelector('#trackTitle');
         const artistEl = this.shadowRoot.querySelector('#trackArtist');
-        if (titleEl)  titleEl.textContent  = track.title  || 'Titre inconnu';
+        if (titleEl) titleEl.textContent = track.title || 'Titre inconnu';
         if (artistEl) artistEl.textContent = track.artist || 'Artiste inconnu';
 
         const switchEl = this.shadowRoot.querySelector('#sw1');
         if (switchEl) switchEl.setValue(0);
-        if (coverImage) { coverImage.classList.remove('playing'); coverImage.style.transform = 'rotate(0deg)'; }
+        if (coverImage) {
+            coverImage.classList.remove('playing');
+            coverImage.style.transform = 'rotate(0deg)';
+        }
 
         const coverWrapper = this.shadowRoot.querySelector('#coverWrapper');
         if (coverWrapper) coverWrapper.style.background = `conic-gradient(var(--ring-bg, #1a1a2a) 0%, var(--ring-bg, #1a1a2a) 0%)`;
@@ -531,9 +535,7 @@ class MyAudioPlayer extends ConnectableComponent {
         this.#stopVuAnimation();
 
         this.dispatchEvent(new CustomEvent('track-changed', {
-            detail: { track, index, tracks: [...this.#tracks] },
-            bubbles: true,
-            composed: true,
+            detail: {track, index, tracks: [...this.#tracks]}, bubbles: true, composed: true,
         }));
     }
 
@@ -541,13 +543,13 @@ class MyAudioPlayer extends ConnectableComponent {
 
     #defineListeners() {
         this.#abortController = new AbortController();
-        const { signal } = this.#abortController;
+        const {signal} = this.#abortController;
 
-        const audioEl      = this.shadowRoot.querySelector('#myplayer');
-        const coverImage   = this.shadowRoot.querySelector('#coverImage');
+        const audioEl = this.shadowRoot.querySelector('#myplayer');
+        const coverImage = this.shadowRoot.querySelector('#coverImage');
         const coverWrapper = this.shadowRoot.querySelector('#coverWrapper');
-        const switchEl     = this.shadowRoot.querySelector('#sw1');
-        const progressBar  = this.shadowRoot.querySelector('#progressBar');
+        const switchEl = this.shadowRoot.querySelector('#sw1');
+        const progressBar = this.shadowRoot.querySelector('#progressBar');
         const progressFill = this.shadowRoot.querySelector('#progressFill');
         const timeCurrent  = this.shadowRoot.querySelector('#timeCurrent');
         const timeDuration = this.shadowRoot.querySelector('#timeDuration');
@@ -556,23 +558,24 @@ class MyAudioPlayer extends ConnectableComponent {
         switchEl?.addEventListener('click', async () => {
             if (audioEl.paused) {
                 await resumeAudioContext();
-                audioEl.play().catch(() => {});
+                audioEl.play().catch(() => {
+                });
             } else {
                 audioEl.pause();
             }
-        }, { signal });
+        }, {signal});
 
         audioEl.addEventListener('play', () => {
             switchEl?.setValue(1);
             coverImage?.classList.add('playing');
             this.#startVuAnimation();
-        }, { signal });
+        }, {signal});
 
         audioEl.addEventListener('pause', () => {
             switchEl?.setValue(0);
             coverImage?.classList.remove('playing');
             this.#stopVuAnimation();
-        }, { signal });
+        }, {signal});
 
         audioEl.addEventListener('ended', () => {
             switchEl?.setValue(0);
@@ -589,9 +592,10 @@ class MyAudioPlayer extends ConnectableComponent {
                 audioEl.play().catch(() => {});
             } else if (this.#currentIndex < this.#tracks.length - 1) {
                 this.#selectTrack(this.#currentIndex + 1, audioEl, coverImage);
-                audioEl.play().catch(() => {});
+                audioEl.play().catch(() => {
+                });
             }
-        }, { signal });
+        }, {signal});
 
         // Anneau de progression + barre + temps
         audioEl.addEventListener('timeupdate', () => {
@@ -607,23 +611,23 @@ class MyAudioPlayer extends ConnectableComponent {
 
         audioEl.addEventListener('loadedmetadata', () => {
             if (timeDuration) timeDuration.textContent = formatTime(audioEl.duration);
-        }, { signal });
+        }, {signal});
 
         // Seek via barre de progression
         progressBar?.addEventListener('click', (e) => {
             if (!audioEl.duration) return;
             const rect = progressBar.getBoundingClientRect();
             audioEl.currentTime = ((e.clientX - rect.left) / rect.width) * audioEl.duration;
-        }, { signal });
+        }, {signal});
 
         // Boutons Précédent / Suivant
         this.shadowRoot.querySelector('#btnPrev')?.addEventListener('click', () => {
             this.#selectTrack(this.#currentIndex - 1, audioEl, coverImage);
-        }, { signal });
+        }, {signal});
 
         this.shadowRoot.querySelector('#btnNext')?.addEventListener('click', () => {
             this.#selectTrack(this.#currentIndex + 1, audioEl, coverImage);
-        }, { signal });
+        }, {signal});
 
         // Stop
         this.shadowRoot.querySelector('#btnStop')?.addEventListener('click', () => {
@@ -658,60 +662,67 @@ class MyAudioPlayer extends ConnectableComponent {
 
         // Knob volume + tooltip
         this.shadowRoot.querySelector('#knobVolume')?.addEventListener('input', (e) => {
-            if (this.gain) this.gain.gain.value = e.target.value;
-            else audioEl.volume = e.target.value;
+            if (this.gain) this.gain.gain.value = e.target.value; else audioEl.volume = e.target.value;
             const v = this.shadowRoot.querySelector('#valVolume');
             if (v) v.textContent = Math.round(e.target.value * 100) + '%';
-        }, { signal });
+        }, {signal});
 
         // Knob pan + tooltip
         this.shadowRoot.querySelector('#knobPan')?.addEventListener('input', (e) => {
             if (this.panner) this.panner.pan.value = e.target.value;
             const val = parseFloat(e.target.value);
             const v = this.shadowRoot.querySelector('#valPan');
-            if (v) v.textContent = val === 0 ? 'C' : (val > 0 ? `R${Math.round(val*100)}` : `L${Math.round(-val*100)}`);
-        }, { signal });
+            if (v) v.textContent = val === 0 ? 'C' : (val > 0 ? `R${Math.round(val * 100)}` : `L${Math.round(-val * 100)}`);
+        }, {signal});
 
         // Knob vitesse + tooltip
         this.shadowRoot.querySelector('#knobSpeed')?.addEventListener('input', (e) => {
             audioEl.playbackRate = e.target.value;
             const v = this.shadowRoot.querySelector('#valSpeed');
             if (v) v.textContent = parseFloat(e.target.value).toFixed(2) + '×';
-        }, { signal });
+        }, {signal});
 
         // Seek par clic sur la cover
         coverWrapper?.addEventListener('click', (event) => {
             if (!audioEl.duration) return;
             const rect = coverWrapper.getBoundingClientRect();
-            const x = event.clientX - (rect.left + rect.width  / 2);
-            const y = event.clientY - (rect.top  + rect.height / 2);
+            const x = event.clientX - (rect.left + rect.width / 2);
+            const y = event.clientY - (rect.top + rect.height / 2);
             let degrees = Math.atan2(y, x) * (180 / Math.PI) + 90;
             if (degrees < 0) degrees += 360;
             audioEl.currentTime = (degrees / 360) * audioEl.duration;
-        }, { signal });
+        }, {signal});
 
         // Sélection depuis la playlist
         document.addEventListener('track-select', async (e) => {
             this.#selectTrack(e.detail.index, audioEl, coverImage);
             await resumeAudioContext();
-            audioEl.play().catch(() => {});
+            audioEl.play().catch(() => {
+            });
             switchEl?.setValue(1);
             coverImage?.classList.add('playing');
-        }, { signal });
+        }, {signal});
 
         document.addEventListener('track-import', (e) => {
             this.#tracks.push(e.detail.track);
-        }, { signal });
-
+        }, {signal});
+        document.addEventListener('playlist-ready', () => {
+            if (!this.#tracks.length) return;
+            document.dispatchEvent(new CustomEvent('track-changed', {
+                detail: {
+                    track: this.#tracks[this.#currentIndex], index: this.#currentIndex, tracks: [...this.#tracks],
+                },
+            }));
+        }, {signal});
         document.addEventListener('playlist-clear', () => {
             this.#tracks = [];
             this.#currentIndex = 0;
             audioEl.pause();
             audioEl.src = '';
             this.#stopVuAnimation();
-            const titleEl  = this.shadowRoot.querySelector('#trackTitle');
+            const titleEl = this.shadowRoot.querySelector('#trackTitle');
             const artistEl = this.shadowRoot.querySelector('#trackArtist');
-            if (titleEl)  titleEl.textContent  = 'Titre';
+            if (titleEl) titleEl.textContent = 'Titre';
             if (artistEl) artistEl.textContent = 'Artiste';
             switchEl?.setValue(0);
             coverImage?.classList.remove('playing');
@@ -719,7 +730,9 @@ class MyAudioPlayer extends ConnectableComponent {
             coverImage.style.background = '#0d0d17';
             if (coverWrapper) coverWrapper.style.background = `conic-gradient(var(--ring-bg, #1a1a2a) 0%, var(--ring-bg, #1a1a2a) 0%)`;
             if (progressFill) progressFill.style.width = '0%';
-        }, { signal });
+        }, {signal});
+        document.dispatchEvent(new CustomEvent('audio-play'));
+        document.dispatchEvent(new CustomEvent('audio-pause'));
     }
 }
 

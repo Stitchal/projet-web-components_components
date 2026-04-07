@@ -162,7 +162,7 @@ window.onload = async () => {
     });
 
     // Fenêtres draggables avec magnétisme
-    const wins = ['win-player', 'win-playlist', 'win-eq', 'win-waveform', 'win-wam']
+    const wins = ['win-player', 'win-playlist', 'win-eq', 'win-waveform', 'win-wam','win-butterchurn']
         .map(id => document.querySelector('#' + id));
 
     // Positionner après rendu pour lire les vraies dimensions
