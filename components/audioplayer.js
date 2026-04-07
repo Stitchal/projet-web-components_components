@@ -128,7 +128,42 @@ sheet.replaceSync(/* css */`
         color: var(--accent, #e8a020);
     }
 
+    .nav-btn.active {
+        background: var(--accent-bg, rgba(232,160,32,0.12));
+        border-color: rgba(232,160,32,0.45);
+        color: var(--accent, #e8a020);
+    }
+
+    /* ── Raccourci clavier play/pause ── */
+    #sw1-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #kbd-hint {
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'Space Mono', monospace;
+        font-size: 7px;
+        color: var(--text-faint, rgba(237,233,224,0.3));
+        letter-spacing: 0.06em;
+        pointer-events: none;
+        white-space: nowrap;
+    }
+
     /* ── Barre de progression ── */
+    #progressWrap {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        flex-shrink: 0;
+        margin-top: 4px;
+    }
+
     #progressBar {
         width: 100%;
         height: 4px;
@@ -136,7 +171,6 @@ sheet.replaceSync(/* css */`
         border-radius: 2px;
         cursor: pointer;
         position: relative;
-        flex-shrink: 0;
     }
 
     #progressFill {
@@ -146,10 +180,39 @@ sheet.replaceSync(/* css */`
         border-radius: 2px;
         transition: width 0.1s linear;
         pointer-events: none;
+        position: relative;
+    }
+
+    #progressHandle {
+        position: absolute;
+        right: -5px;
+        top: 50%;
+        transform: translateY(-50%) scale(0.6);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent, #e8a020);
+        box-shadow: 0 0 5px var(--accent-glow, rgba(232,160,32,0.6));
+        transition: transform 0.15s;
+        pointer-events: none;
+    }
+
+    #progressBar:hover #progressHandle {
+        transform: translateY(-50%) scale(1);
     }
 
     #progressBar:hover #progressFill {
         box-shadow: 0 0 6px var(--accent-glow, rgba(232,160,32,0.7));
+    }
+
+    #progressTime {
+        display: flex;
+        justify-content: space-between;
+        font-family: 'Space Mono', monospace;
+        font-size: 7px;
+        color: var(--text-faint, rgba(237,233,224,0.3));
+        letter-spacing: 0.04em;
+        pointer-events: none;
     }
 
     /* ── VU-mètre ── */
@@ -206,6 +269,13 @@ sheet.replaceSync(/* css */`
     }
 
     audio { display: none; }
+
+    webaudio-knob:focus-within,
+    webaudio-knob:focus {
+        outline: 2px solid var(--accent, #e8a020);
+        outline-offset: 3px;
+        border-radius: 4px;
+    }
 `);
 
 const html = /* html */`
@@ -220,15 +290,23 @@ const html = /* html */`
                 <span id="trackArtist">Artiste</span>
             </div>
             <div id="navControls">
-                <button class="nav-btn" id="btnPrev">&#9664;&#9664;</button>
-                <webaudio-switch
-                    src="${BASE}images/S_pinkponk-ON-OFF.png"
-                    id="sw1" type="toggle" width="60" height="40">
-                </webaudio-switch>
-                <button class="nav-btn" id="btnStop">&#9632;</button>
-                <button class="nav-btn" id="btnNext">&#9654;&#9654;</button>
+                <button class="nav-btn" id="btnPrev" aria-label="Piste précédente">&#9664;&#9664;</button>
+                <div id="sw1-wrap">
+                    <webaudio-switch
+                        src="${BASE}images/S_pinkponk-ON-OFF.png"
+                        id="sw1" type="toggle" width="60" height="40">
+                    </webaudio-switch>
+                    <span id="kbd-hint">SPACE</span>
+                </div>
+                <button class="nav-btn" id="btnStop" aria-label="Arrêter">&#9632;</button>
+                <button class="nav-btn" id="btnNext" aria-label="Piste suivante">&#9654;&#9654;</button>
+                <button class="nav-btn" id="btnShuffle" title="Aléatoire" aria-label="Lecture aléatoire" aria-pressed="false">&#x21C4;</button>
+                <button class="nav-btn" id="btnRepeat" title="Répéter" aria-label="Répéter la piste" aria-pressed="false">&#x21BA;</button>
             </div>
-            <div id="progressBar"><div id="progressFill"></div></div>
+            <div id="progressWrap">
+                <div id="progressBar"><div id="progressFill"><div id="progressHandle"></div></div></div>
+                <div id="progressTime"><span id="timeCurrent">0:00</span><span id="timeDuration">0:00</span></div>
+            </div>
         </div>
     </div>
     <div id="vuMeter"></div>
@@ -259,6 +337,13 @@ const html = /* html */`
 </div>
 `;
 
+function formatTime(seconds) {
+    if (!isFinite(seconds)) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 class MyAudioPlayer extends ConnectableComponent {
     #currentIndex = 0;
     #tracks = [];
@@ -266,6 +351,8 @@ class MyAudioPlayer extends ConnectableComponent {
     #analyser = null;
     #vuBars = [];
     #vuAnimating = false;
+    #shuffle = false;
+    #repeat = false;
 
     static get observedAttributes() {
         return ['src', 'autoplay'];
@@ -357,12 +444,11 @@ class MyAudioPlayer extends ConnectableComponent {
         this._markConnectedToDestination();
     }
 
-    getInputNode() {
-        return this.sourceNode;
-    }
+    getInputNode()  { return this.sourceNode; }
+    getOutputNode() { return this.outputNode; }
 
-    getOutputNode() {
-        return this.outputNode;
+    get currentTrack() {
+        return this.#tracks[this.#currentIndex] ?? null;
     }
 
     disconnectedCallback() {
@@ -465,6 +551,8 @@ class MyAudioPlayer extends ConnectableComponent {
         const switchEl = this.shadowRoot.querySelector('#sw1');
         const progressBar = this.shadowRoot.querySelector('#progressBar');
         const progressFill = this.shadowRoot.querySelector('#progressFill');
+        const timeCurrent  = this.shadowRoot.querySelector('#timeCurrent');
+        const timeDuration = this.shadowRoot.querySelector('#timeDuration');
 
         // Play/Pause
         switchEl?.addEventListener('click', async () => {
@@ -493,14 +581,23 @@ class MyAudioPlayer extends ConnectableComponent {
             switchEl?.setValue(0);
             coverImage?.classList.remove('playing');
             this.#stopVuAnimation();
-            if (this.#currentIndex < this.#tracks.length - 1) {
+            if (this.#repeat) {
+                audioEl.currentTime = 0;
+                resumeAudioContext().then(() => audioEl.play().catch(() => {}));
+            } else if (this.#shuffle && this.#tracks.length > 1) {
+                let next;
+                do { next = Math.floor(Math.random() * this.#tracks.length); }
+                while (next === this.#currentIndex);
+                this.#selectTrack(next, audioEl, coverImage);
+                audioEl.play().catch(() => {});
+            } else if (this.#currentIndex < this.#tracks.length - 1) {
                 this.#selectTrack(this.#currentIndex + 1, audioEl, coverImage);
                 audioEl.play().catch(() => {
                 });
             }
         }, {signal});
 
-        // Anneau de progression + barre
+        // Anneau de progression + barre + temps
         audioEl.addEventListener('timeupdate', () => {
             if (!audioEl.duration) return;
             const progress = (audioEl.currentTime / audioEl.duration) * 100;
@@ -508,6 +605,12 @@ class MyAudioPlayer extends ConnectableComponent {
                 coverWrapper.style.background = `conic-gradient(var(--accent, #e8a020) ${progress}%, var(--ring-bg, #1a1a2a) ${progress}%)`;
             }
             if (progressFill) progressFill.style.width = progress + '%';
+            if (timeCurrent) timeCurrent.textContent = formatTime(audioEl.currentTime);
+            if (timeDuration) timeDuration.textContent = formatTime(audioEl.duration);
+        }, { signal });
+
+        audioEl.addEventListener('loadedmetadata', () => {
+            if (timeDuration) timeDuration.textContent = formatTime(audioEl.duration);
         }, {signal});
 
         // Seek via barre de progression
@@ -535,7 +638,27 @@ class MyAudioPlayer extends ConnectableComponent {
             this.#stopVuAnimation();
             if (coverWrapper) coverWrapper.style.background = `conic-gradient(var(--ring-bg, #1a1a2a) 0%, var(--ring-bg, #1a1a2a) 0%)`;
             if (progressFill) progressFill.style.width = '0%';
-        }, {signal});
+        }, { signal });
+
+        // Shuffle
+        this.shadowRoot.querySelector('#btnShuffle')?.addEventListener('click', () => {
+            this.#shuffle = !this.#shuffle;
+            if (this.#shuffle) this.#repeat = false;
+            this.shadowRoot.querySelector('#btnShuffle')?.classList.toggle('active', this.#shuffle);
+            this.shadowRoot.querySelector('#btnShuffle')?.setAttribute('aria-pressed', String(this.#shuffle));
+            this.shadowRoot.querySelector('#btnRepeat')?.classList.remove('active');
+            this.shadowRoot.querySelector('#btnRepeat')?.setAttribute('aria-pressed', 'false');
+        }, { signal });
+
+        // Repeat
+        this.shadowRoot.querySelector('#btnRepeat')?.addEventListener('click', () => {
+            this.#repeat = !this.#repeat;
+            if (this.#repeat) this.#shuffle = false;
+            this.shadowRoot.querySelector('#btnRepeat')?.classList.toggle('active', this.#repeat);
+            this.shadowRoot.querySelector('#btnRepeat')?.setAttribute('aria-pressed', String(this.#repeat));
+            this.shadowRoot.querySelector('#btnShuffle')?.classList.remove('active');
+            this.shadowRoot.querySelector('#btnShuffle')?.setAttribute('aria-pressed', 'false');
+        }, { signal });
 
         // Knob volume + tooltip
         this.shadowRoot.querySelector('#knobVolume')?.addEventListener('input', (e) => {

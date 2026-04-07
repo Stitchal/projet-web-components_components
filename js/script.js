@@ -22,8 +22,8 @@ document.addEventListener('fullscreenchange', () => {
 // Doit être enregistré immédiatement — track-changed est émis dès le
 // chargement des pistes, avant window.onload.
 const bg = document.querySelector('#bg');
-document.addEventListener('track-changed', (e) => {
-    const cover = e.detail?.track?.cover;
+
+function applyBackground(cover) {
     if (!bg) return;
     if (cover) {
         bg.style.backgroundImage = `url('${cover}')`;
@@ -31,6 +31,22 @@ document.addEventListener('track-changed', (e) => {
     } else {
         bg.classList.remove('has-cover');
     }
+}
+
+document.addEventListener('track-changed', (e) => {
+    applyBackground(e.detail?.track?.cover);
+});
+
+// Si le composant a déjà émis track-changed avant que ce listener soit enregistré
+// (fetch depuis le cache, exécution des modules dans l'ordre), on lit la piste
+// courante directement sur le composant une fois le DOM prêt.
+document.addEventListener('DOMContentLoaded', () => {
+    const player = document.querySelector('my-audio-player');
+    if (!player) return;
+    customElements.whenDefined('my-audio-player').then(() => {
+        const cover = player.currentTrack?.cover;
+        if (cover) applyBackground(cover);
+    });
 });
 
 /**
