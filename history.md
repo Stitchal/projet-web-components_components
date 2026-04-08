@@ -1,5 +1,29 @@
 # History
 
+## [2026-04-08] — Corrections complémentaires : fallback tracks.json + layout standalone
+
+- **Fichiers modifiés** : `components/audioplayer.js`, `index.html`
+- **Type** : Bugfix / Layout
+- **Description** :
+  - `audioplayer.js` : suppression du fallback `../assets/tracks.json` (résolut via `import.meta.url` et remontait d'un niveau — cassé sur CDN). L'attribut `src` est maintenant obligatoire ; un `console.warn` est émis si absent.
+  - `index.html` : ajout d'un bloc `<style>` inline qui surcharge `position: absolute` des `.window` pour les remettre dans un flux flexbox. Sans `script.js`, les fenêtres n'avaient pas de position et s'empilaient à `0,0`.
+- **Raison** : Audit complet des dépendances pour hébergement sur repo distant
+- **Skills appliqués** : `web-components`
+
+
+
+- **Fichiers modifiés** : `components/audioplayer.js`, `components/butterchurn.js`, `index.html`
+- **Type** : Refactoring / Architecture
+- **Description** :
+  - `audioplayer.js` : les events `audio-play`/`audio-pause` sont désormais dispatchés dans les vrais handlers `play`/`pause` de l'élément `<audio>`, au lieu d'être émis trop tôt dans `connectedCallback`.
+  - `butterchurn.js` : suppression de tout couplage DOM inter-composant. `#renderFrame()` utilise `#isPlaying` interne (mis à jour par `audio-play`/`audio-pause`) au lieu de faire `document.querySelector('my-audio-player')` à 60fps et de percer son Shadow DOM. `#defineListeners()` ne fait plus `player.connectComponent(this)` — le câblage est délégué à `index.html`. Suppression de l'import inutile `webaudiocontrols.js`.
+  - `index.html` : réécriture en page standalone sans `script.js`, `dragManager.js` ni WAM. Le câblage de la chaîne audio (`player → eq → waveform → butterchurn`) est assuré par un `<script type="module">` inline via `customElements.whenDefined()` + `connectComponent()`.
+- **Raison** : Préparer les composants à être hébergés sur un second dépôt GitHub et importés via URL distante. Chaque composant doit être totalement autonome, sans référence directe à d'autres éléments du DOM.
+- **Skills appliqués** : `web-components`, `web-audio`
+- **Décisions de design** :
+  - Butterchurn : autonome via events `audio-play`/`audio-pause`, câblage audio délégué à la page hôte
+  - `index.html` : câblage déclaré dans un `<script type="module">` inline, pas dans un fichier JS externe — la page se suffit à elle-même
+
 ## [2026-04-07] — Correction du graphe audio (butterchurn reroutait le signal principal)
 
 - **Fichiers modifiés** : `components/butterchurn.js`, `js/script.js`
