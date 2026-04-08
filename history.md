@@ -1,5 +1,14 @@
 # History
 
+## [2026-04-07] — Correction du graphe audio (butterchurn reroutait le signal principal)
+
+- **Fichiers modifiés** : `components/butterchurn.js`, `js/script.js`
+- **Type** : Bugfix
+- **Description** : Butterchurn appelait `player.connectComponent(this)` dans son `connectedCallback`, ce qui écrasait la chaîne `player → eq → waveform` câblée par `script.js` et créait des nœuds Gain orphelins. Suppression du câblage autonome dans butterchurn ; ajout de `waveform.connectComponent(butterchurn)` dans l'orchestrateur `script.js`.
+- **Raison** : Graphe audio cassé — nœuds disconnectés visibles dans le débogueur Web Audio
+- **Skills appliqués** : `web-audio`
+- **Décision de design** : Butterchurn est imbriqué en fin de chaîne (`player → eq → waveform → butterchurn → destination`), câblé uniquement par `script.js`
+
 ## [2026-04-02] — Split my-audio-player en AudioPlayer + Playlist
 
 - **Fichiers modifiés** : `components/AudioPlayer.js` (nouveau), `components/Playlist.js` (nouveau), `index.html`, `js/script.js`
