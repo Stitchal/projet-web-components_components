@@ -117,14 +117,17 @@ window.onload = async () => {
         customElements.whenDefined('my-audio-player'),
         customElements.whenDefined('my-eq'),
         customElements.whenDefined('my-waveform'),
+        customElements.whenDefined('my-butterchurn'),
     ]);
 
-    const player   = document.querySelector('#player');
-    const eq       = document.querySelector('#eq');
-    const waveform = document.querySelector('#waveform');
+    const player      = document.querySelector('#player');
+    const eq          = document.querySelector('#eq');
+    const waveform    = document.querySelector('#waveform');
+    const butterchurn = document.querySelector('#butterchurn');
 
     player.connectComponent(eq);
     eq.connectComponent(waveform);
+    waveform.connectComponent(butterchurn);
 
     document.addEventListener('keydown', async (e) => {
         // Ignorer si focus sur un input/textarea

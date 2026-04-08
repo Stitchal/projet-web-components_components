@@ -88,14 +88,6 @@ class Butterchurn extends ConnectableComponent {
 
         this.#setupVisualizer();
         this.#defineListeners();
-        requestAnimationFrame(() => {
-            const player = document.querySelector('my-audio-player');
-            if (player) {
-                player.connectComponent(this);
-                const audio = player.shadowRoot?.querySelector('#myplayer');
-                if (audio && !audio.paused) this.#isPlaying = true;
-            }
-        });
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
