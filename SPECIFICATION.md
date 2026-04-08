@@ -15,8 +15,9 @@
 5. [`<my-playlist>`](#5-my-playlist)
 6. [`<my-eq>`](#6-my-eq)
 7. [`<my-waveform>`](#7-my-waveform)
-8. [Tableau des événements inter-composants](#8-tableau-des-événements-inter-composants)
-9. [Exemples d'intégration](#9-exemples-dintégration)
+8. [`<my-butterchurn>`](#8-my-butterchurn)
+9. [Tableau des événements inter-composants](#9-tableau-des-événements-inter-composants)
+10. [Exemples d'intégration](#10-exemples-dintégration)
 
 ---
 
@@ -442,7 +443,78 @@ Aucun.
 
 ---
 
-## 8. Tableau des événements inter-composants
+## 8. `<my-butterchurn>`
+
+**Fichier :** `components/butterchurn.js`  
+**Tag :** `my-butterchurn`  
+**Étend :** `ConnectableComponent`  
+**Décision de design :** Composant **autonome** et **chaînable**. Passthrough audio pur — il lit le signal via un `AnalyserNode` interne pour alimenter le visualiseur Milkdrop (butterchurn), sans modifier le signal. Il réagit aux événements `audio-play` et `audio-pause` pour activer/suspendre le rendu canvas. Le câblage audio est délégué à la page hôte via `connectComponent()`.
+
+### Attributs HTML
+
+| Attribut | Type | Défaut | Description |
+|----------|------|--------|-------------|
+| `blend` | `number` | `2.0` | Durée de transition en secondes entre les presets Milkdrop. Réactif. |
+
+### Propriétés JS exposées
+
+| Propriété | Type | Accès | Description |
+|-----------|------|-------|-------------|
+| `audioCtx` | `AudioContext` | lecture seule | Contexte audio partagé (hérité). |
+
+### Méthodes publiques
+
+| Méthode | Signature | Description |
+|---------|-----------|-------------|
+| `connectComponent` | `(target: ConnectableComponent) → void` | Héritée. Rarement utilisé — ce composant est généralement le dernier de la chaîne. |
+| `getInputNode` | `() → GainNode` | Retourne le nœud d'entrée (GainNode). |
+| `getOutputNode` | `() → AnalyserNode` | Retourne le nœud de sortie (AnalyserNode, après le gain). |
+
+### Graphe audio interne
+
+```
+→ GainNode → AnalyserNode → ctx.destination
+    └─ butterchurn.connectAudio(gainNode) → rendu canvas (requestAnimationFrame)
+```
+
+Le rendu canvas n'est actif que si `audio-play` a été reçu. Il se suspend sur `audio-pause`.
+
+### Événements émis
+
+Aucun.
+
+### Événements écoutés
+
+| Événement | Écouté sur | `detail` | Description |
+|-----------|------------|----------|-------------|
+| `audio-play` | `document` | — | Active le rendu canvas Milkdrop. |
+| `audio-pause` | `document` | — | Suspend le rendu canvas (la boucle `requestAnimationFrame` continue mais ne rend pas). |
+
+### Usage
+
+```html
+<!-- Standalone -->
+<my-butterchurn></my-butterchurn>
+
+<!-- Avec transition de preset plus lente -->
+<my-butterchurn blend="4"></my-butterchurn>
+
+<!-- En fin de chaîne audio -->
+<script type="module">
+  await Promise.all([
+    customElements.whenDefined('my-audio-player'),
+    customElements.whenDefined('my-butterchurn'),
+  ]);
+  const player      = document.querySelector('my-audio-player');
+  const butterchurn = document.querySelector('my-butterchurn');
+  // Chaîne : player → butterchurn → ctx.destination
+  player.connectComponent(butterchurn);
+</script>
+```
+
+---
+
+## 9. Tableau des événements inter-composants
 
 | Événement | Émetteur | Récepteur(s) | Transport | `detail` |
 |-----------|----------|--------------|-----------|----------|
@@ -450,12 +522,14 @@ Aucun.
 | `track-select` | `my-playlist` | `my-audio-player` | `document` | `{ index }` |
 | `track-import` | `my-playlist` | `my-audio-player` | `document` | `{ track }` |
 | `playlist-clear` | `my-playlist` | `my-audio-player` | `document` | — |
+| `audio-play` | `my-audio-player` | `my-butterchurn`, page hôte | `document` | — |
+| `audio-pause` | `my-audio-player` | `my-butterchurn`, page hôte | `document` | — |
 
 Tous ces événements transitent via `document` (non bubbling natif, dispatchés directement sur `document`) ce qui permet aux composants de communiquer sans être imbriqués ni se connaître mutuellement.
 
 ---
 
-## 9. Exemples d'intégration
+## 10. Exemples d'intégration
 
 ### Lecteur minimal (sans playlist, sans effets)
 

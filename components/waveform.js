@@ -4,7 +4,7 @@ const sheet = new CSSStyleSheet();
 sheet.replaceSync(/* css */`
     * { box-sizing: border-box; }
 
-    :host { display: block; width: 100%; height: 100%; }
+    :host { display: block; width: 100%; height: 200px; }
 
     #container {
         font-family: 'Barlow Condensed', sans-serif;
@@ -18,7 +18,6 @@ sheet.replaceSync(/* css */`
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        justify-content: stretch;
         position: relative;
         overflow: hidden;
         gap: 6px;
@@ -127,10 +126,11 @@ class Waveform extends ConnectableComponent {
         this.#canvasCtx = this.#canvas.getContext('2d');
 
         this.#resizeObserver = new ResizeObserver(() => {
-            this.#canvas.width  = this.#canvas.offsetWidth  || 400;
-            this.#canvas.height = this.#canvas.offsetHeight || 280;
+            const wrap = this.shadowRoot.querySelector('#canvasWrap');
+            this.#canvas.width  = wrap.offsetWidth  || 400;
+            this.#canvas.height = wrap.offsetHeight || 160;
         });
-        this.#resizeObserver.observe(this.#canvas);
+        this.#resizeObserver.observe(this.shadowRoot.querySelector('#canvasWrap'));
 
         this.initAudioGraph();
 

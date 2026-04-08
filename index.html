@@ -31,10 +31,10 @@
             customElements.whenDefined('my-waveform'),
             customElements.whenDefined('my-butterchurn'),
         ]);
-        const player      = document.querySelector('#player');
-        const eq          = document.querySelector('#eq');
-        const waveform    = document.querySelector('#waveform');
-        const butterchurn = document.querySelector('#butterchurn');
+        const player      = document.querySelector('#doc-player-instance');
+        const eq          = document.querySelector('#doc-eq-instance');
+        const waveform    = document.querySelector('#doc-waveform-instance');
+        const butterchurn = document.querySelector('#doc-butterchurn-instance');
         player.connectComponent(eq);
         eq.connectComponent(waveform);
         waveform.connectComponent(butterchurn);
@@ -46,51 +46,493 @@
           href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700&display=swap">
     <link rel="stylesheet" href="css/styles.css">
     <style>
-        /* Layout sans script.js : flux flexbox au lieu de position absolue */
-        body { overflow: auto; }
+        /* ── Variables ───────────────────────────────────── */
+        :root {
+            --bg-page: #08080f;
+            --bg-component: #11111c;
+            --bg-titlebar: #17172a;
+            --bg-input: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.07);
+            --border-top: rgba(255,255,255,0.12);
+            --text: #ede9e0;
+            --text-dim: rgba(237,233,224,0.38);
+            --text-faint: rgba(237,233,224,0.3);
+            --accent: #e8a020;
+            --btn-hover-bg: rgba(232,160,32,0.15);
+            --btn-hover-border: rgba(232,160,32,0.4);
+        }
+
+        /* ── Reset / base ────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            min-height: 100%;
+            background: var(--bg-page);
+            color: var(--text);
+            font-family: 'Barlow Condensed', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ── Layout ──────────────────────────────────────── */
         main {
-            position: static;
             display: flex;
-            flex-wrap: wrap;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 16px;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 24px;
+            min-height: 100vh;
+            background: var(--bg-page);
         }
+
+        /* ── Fenêtres ────────────────────────────────────── */
         .window {
-            position: static;
             width: 340px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            overflow: hidden;
         }
-        #win-waveform, #win-butterchurn {
-            flex: 1;
-            min-width: 300px;
+
+        .titlebar {
+            background: var(--bg-titlebar);
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 14px 14px 0 0;
+            padding: 0 12px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            user-select: none;
         }
-        #win-butterchurn { min-width: 340px; }
-        #win-playlist    { min-height: 220px; }
+
+        .titlebar-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+
+        #win-docs { width: 100%; max-width: 900px; }
+
+        /* ── Documentation ─────────────────────────────── */
+        .docs {
+            font-family: 'Barlow Condensed', sans-serif;
+            background: var(--bg-component, #11111c);
+            border: 1px solid var(--border, rgba(255,255,255,0.07));
+            border-top: none;
+            border-radius: 0 0 14px 14px;
+            color: var(--text, #ede9e0);
+            padding: 24px 28px 28px;
+        }
+        .docs-nav {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .docs-nav button {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            background: var(--bg-input, rgba(255,255,255,0.04));
+            border: 1px solid var(--border, rgba(255,255,255,0.07));
+            border-radius: 6px;
+            color: var(--text-dim, rgba(237,233,224,0.38));
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .docs-nav button:hover,
+        .docs-nav button.active {
+            background: var(--btn-hover-bg, rgba(232,160,32,0.15));
+            border-color: var(--btn-hover-border, rgba(232,160,32,0.4));
+            color: var(--accent, #e8a020);
+        }
+        .docs-section { display: none; }
+        .docs-section.active { display: block; }
+
+        .docs-section h2 {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--text, #ede9e0);
+            margin: 0 0 2px;
+        }
+        .docs-section .tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: var(--accent, #e8a020);
+            margin-bottom: 8px;
+        }
+        .docs-section .design-note {
+            font-size: 13px;
+            color: var(--text-dim, rgba(237,233,224,0.38));
+            line-height: 1.5;
+            margin-bottom: 20px;
+            border-left: 2px solid var(--border-top, rgba(255,255,255,0.12));
+            padding-left: 10px;
+        }
+        .docs-preview {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0 24px;
+        }
+        .docs-preview .window {
+            position: static;
+        }
+        .docs-section h3 {            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dim, rgba(237,233,224,0.38));
+            margin: 20px 0 8px;
+        }
+        .docs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .docs-table thead tr {
+            border-bottom: 1px solid var(--border-top, rgba(255,255,255,0.12));
+        }
+        .docs-table th {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            font-weight: 400;
+            text-align: left;
+            color: var(--text-dim, rgba(237,233,224,0.38));
+            padding: 0 16px 8px 0;
+            letter-spacing: 0.06em;
+        }
+        .docs-table td {
+            padding: 8px 16px 8px 0;
+            vertical-align: top;
+            border-bottom: 1px solid var(--border, rgba(255,255,255,0.07));
+            line-height: 1.5;
+        }
+        .docs-table td:first-child {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent, #e8a020);
+            white-space: nowrap;
+        }
+        .docs-table td:nth-child(2),
+        .docs-table td:nth-child(3) {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--text-faint, rgba(237,233,224,0.3));
+            white-space: nowrap;
+        }
+        .docs-table code {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            background: var(--bg-input, rgba(255,255,255,0.06));
+            border-radius: 3px;
+            padding: 1px 5px;
+        }
+        .docs-graph {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim, rgba(237,233,224,0.38));
+            background: var(--bg-titlebar, #17172a);
+            border: 1px solid var(--border, rgba(255,255,255,0.07));
+            border-radius: 8px;
+            padding: 12px 16px;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
     </style>
 </head>
 
 <body>
 <main>
-    <div class="window" id="win-player" data-no-resize>
-        <div class="titlebar"><span class="titlebar-dot"></span>PLAYER</div>
-        <my-audio-player id="player" src="./assets/tracks.json"></my-audio-player>
+    <!-- ── Documentation des composants ────────────────── -->
+    <div class="window" id="win-docs">
+        <div class="titlebar">
+            <span class="titlebar-dot"></span>DOCS — API RÉFÉRENCE
+            <a href="https://stitchal.github.io/projet-web-components_demo/" target="_blank" style="margin-left:auto;font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);text-decoration:none;opacity:0.8;letter-spacing:0.06em;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">↗ DEMO</a>
+        </div>
+        <div class="docs">
+
+            <nav class="docs-nav">
+                <button class="active" data-target="doc-player">&lt;my-audio-player&gt;</button>
+                <button data-target="doc-playlist">&lt;my-playlist&gt;</button>
+                <button data-target="doc-eq">&lt;my-eq&gt;</button>
+                <button data-target="doc-waveform">&lt;my-waveform&gt;</button>
+                <button data-target="doc-butterchurn">&lt;my-butterchurn&gt;</button>
+            </nav>
+
+            <!-- ── my-audio-player ── -->
+            <section class="docs-section active" id="doc-player">
+                <h2>Audio Player</h2>
+                <div class="tag">&lt;my-audio-player&gt; — components/audioplayer.js</div>
+                <div class="docs-preview">
+                    <div class="window" style="width:340px">
+                        <div class="titlebar"><span class="titlebar-dot"></span>PLAYER</div>
+                        <my-audio-player id="doc-player-instance" src="./assets/tracks.json"></my-audio-player>
+                    </div>
+                </div>
+                <p class="design-note">Composant <strong>autonome</strong>. Gère le graphe audio complet (MediaElementSource → Gain → Panner → Analyser), les contrôles de lecture et la couverture. Peut être chaîné via <code>connectComponent()</code>.</p>
+
+                <h3>Attributs</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Attribut</th><th>Type</th><th>Défaut</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>src</td><td>URL</td><td>—</td><td>URL du fichier JSON de playlist. Obligatoire. Réactif : changer l'attribut recharge la playlist.</td></tr>
+                        <tr><td>autoplay</td><td>boolean</td><td>absent</td><td>Lance la lecture automatiquement au chargement (présence = <code>true</code>).</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Format JSON de playlist</h3>
+                <div class="docs-graph">[
+  { "id": 1, "title": "…", "artist": "…", "audio": "…/track.mp3", "cover": "…/cover.png" }
+]</div>
+
+                <h3>Propriétés JS</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Propriété</th><th>Type</th><th>Accès</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>currentTrack</td><td>object|null</td><td>lecture</td><td>Piste chargée <code>{ id, title, artist, audio, cover }</code> ou <code>null</code>.</td></tr>
+                        <tr><td>audioCtx</td><td>AudioContext</td><td>lecture</td><td>Contexte audio partagé (singleton).</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Méthodes</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Méthode</th><th>Signature</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>connectComponent</td><td>(target) → void</td><td>Chaîne la sortie audio vers un autre composant <code>ConnectableComponent</code>.</td></tr>
+                        <tr><td>getInputNode</td><td>() → MediaElementAudioSourceNode</td><td>Nœud d'entrée de la chaîne interne.</td></tr>
+                        <tr><td>getOutputNode</td><td>() → GainNode</td><td>Nœud de sortie — point de connexion vers le composant suivant.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Événements émis</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Événement</th><th>Sur</th><th>detail</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>track-changed</td><td>document</td><td><code>{ track, index, tracks[] }</code></td><td>Émis à chaque changement de piste.</td></tr>
+                        <tr><td>audio-play</td><td>document</td><td>—</td><td>Émis quand la lecture démarre.</td></tr>
+                        <tr><td>audio-pause</td><td>document</td><td>—</td><td>Émis quand la lecture se met en pause.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Événements écoutés</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Événement</th><th>Sur</th><th>detail</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>track-select</td><td>document</td><td><code>{ index }</code></td><td>Sélectionne et lance la piste à l'index donné.</td></tr>
+                        <tr><td>track-import</td><td>document</td><td><code>{ track }</code></td><td>Ajoute une piste importée à la liste interne.</td></tr>
+                        <tr><td>playlist-clear</td><td>document</td><td>—</td><td>Vide la liste et arrête la lecture.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Graphe audio interne</h3>
+                <div class="docs-graph">&lt;audio&gt; → MediaElementSourceNode → GainNode (vol) → StereoPannerNode → AnalyserNode (VU) → outputNode → ctx.destination</div>
+            </section>
+
+            <!-- ── my-playlist ── -->
+            <section class="docs-section" id="doc-playlist">
+                <h2>Playlist</h2>
+                <div class="tag">&lt;my-playlist&gt; — components/Playlist.js</div>
+                <div class="docs-preview">
+                    <div class="window" style="width:340px">
+                        <div class="titlebar"><span class="titlebar-dot"></span>PLAYLIST</div>
+                        <my-playlist id="doc-playlist-instance"></my-playlist>
+                    </div>
+                </div>
+                <p class="design-note">Composant <strong>autonome, UI pur</strong>. Aucun graphe audio. Se synchronise avec <code>&lt;my-audio-player&gt;</code> exclusivement via événements sur <code>document</code> — les deux peuvent fonctionner indépendamment.</p>
+
+                <h3>Attributs</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Attribut</th><th>Type</th><th>Défaut</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td colspan="4" style="color:var(--text-faint);font-style:italic">Aucun attribut observé. Composant entièrement piloté par événements.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Fonctionnalités</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Fonctionnalité</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>Affichage</td><td>Cover miniature, titre, artiste, durée par piste, durée totale.</td></tr>
+                        <tr><td>Drag & drop</td><td>Réordonnancement des pistes par glisser-déposer.</td></tr>
+                        <tr><td>Import fichier</td><td>Bouton "+ Fichier" ou drag & drop sur le composant.</td></tr>
+                        <tr><td>Import URL</td><td>Bouton "+ URL" — saisie d'une URL distante.</td></tr>
+                        <tr><td>Clear</td><td>Vide la playlist et émet <code>playlist-clear</code>.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Événements émis</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Événement</th><th>Sur</th><th>detail</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>track-select</td><td>document</td><td><code>{ index }</code></td><td>Clic utilisateur sur une piste.</td></tr>
+                        <tr><td>track-import</td><td>document</td><td><code>{ track }</code></td><td>Piste importée (fichier ou URL).</td></tr>
+                        <tr><td>playlist-clear</td><td>document</td><td>—</td><td>Playlist vidée par l'utilisateur.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Événements écoutés</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Événement</th><th>Sur</th><th>detail</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>track-changed</td><td>document</td><td><code>{ track, index, tracks? }</code></td><td>Met à jour la liste complète si <code>tracks</code> est présent ; met en surbrillance la piste active dans tous les cas.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ── my-eq ── -->
+            <section class="docs-section" id="doc-eq">
+                <h2>Equalizer</h2>
+                <div class="tag">&lt;my-eq&gt; — components/equalizer.js</div>
+                <div class="docs-preview">
+                    <div class="window" style="width:340px">
+                        <div class="titlebar"><span class="titlebar-dot"></span>EQUALIZER</div>
+                        <my-eq id="doc-eq-instance" preset="0,0,0,0,0,0"></my-eq>
+                    </div>
+                </div>
+                <p class="design-note">Composant <strong>autonome et chaînable</strong>. 6 filtres <code>BiquadFilter</code> de type <em>peaking</em> en série. Fonctionne seul (sortie → <code>ctx.destination</code>) ou inséré dans une chaîne via <code>connectComponent()</code>.</p>
+
+                <h3>Attributs</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Attribut</th><th>Type</th><th>Défaut</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>preset</td><td>string</td><td>"0,0,0,0,0,0"</td><td>Gains dB des 6 bandes séparés par virgule. Ordre : 60Hz, 170Hz, 350Hz, 1kHz, 3.5kHz, 10kHz. Plage : −30 à +30 dB. Réactif.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Préréglages intégrés</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Nom</th><th>Valeur</th></tr></thead>
+                    <tbody>
+                        <tr><td>Flat</td><td><code>0,0,0,0,0,0</code></td></tr>
+                        <tr><td>Bass</td><td><code>5,4,2,0,-1,-2</code></td></tr>
+                        <tr><td>Treble</td><td><code>-2,0,2,4,3,1</code></td></tr>
+                        <tr><td>Rock</td><td><code>4,3,0,-2,2,3</code></td></tr>
+                        <tr><td>Pop</td><td><code>3,2,0,1,3,4</code></td></tr>
+                        <tr><td>Jazz</td><td><code>2,0,-1,0,2,4</code></td></tr>
+                        <tr><td>Vocal</td><td><code>0,0,0,0,-3,-5</code></td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Méthodes</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Méthode</th><th>Signature</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>connectComponent</td><td>(target) → void</td><td>Chaîne la sortie du dernier filtre vers un autre composant.</td></tr>
+                        <tr><td>getInputNode</td><td>() → BiquadFilterNode</td><td>Premier filtre (60Hz) — point d'entrée.</td></tr>
+                        <tr><td>getOutputNode</td><td>() → BiquadFilterNode</td><td>Dernier filtre (10kHz) — point de sortie.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Graphe audio interne</h3>
+                <div class="docs-graph">→ BiquadFilter(60Hz) → BiquadFilter(170Hz) → BiquadFilter(350Hz)
+  → BiquadFilter(1kHz) → BiquadFilter(3.5kHz) → BiquadFilter(10kHz) → ctx.destination</div>
+            </section>
+
+            <!-- ── my-waveform ── -->
+            <section class="docs-section" id="doc-waveform">
+                <h2>Waveform</h2>
+                <div class="tag">&lt;my-waveform&gt; — components/waveform.js</div>
+                <div class="docs-preview">
+                    <div class="window" style="width:340px">
+                        <div class="titlebar"><span class="titlebar-dot"></span>WAVEFORM</div>
+                        <my-waveform id="doc-waveform-instance" color="#39e082" fft-size="1024"></my-waveform>
+                    </div>
+                </div>
+                <p class="design-note">Composant <strong>autonome et chaînable</strong>. Passthrough audio transparent — lit le signal sur un <code>AnalyserNode</code> pour visualiser la forme d'onde ou le spectre, sans modifier le signal.</p>
+
+                <h3>Attributs</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Attribut</th><th>Type</th><th>Défaut</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>color</td><td>string</td><td>#39e082</td><td>Couleur du tracé (valeur CSS). Réactif.</td></tr>
+                        <tr><td>fft-size</td><td>number</td><td>1024</td><td>Taille FFT de l'<code>AnalyserNode</code> (puissance de 2, 32–32768). Réactif.</td></tr>
+                        <tr><td>mode</td><td>waveform|spectrum</td><td>waveform</td><td>Mode de visualisation : forme d'onde temporelle ou spectre fréquentiel. Réactif.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Méthodes</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Méthode</th><th>Signature</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>connectComponent</td><td>(target) → void</td><td>Rarement utilisé — ce composant est généralement le dernier avant le visualiseur.</td></tr>
+                        <tr><td>getInputNode</td><td>() → AnalyserNode</td><td>Nœud d'entrée et de sortie (passthrough).</td></tr>
+                        <tr><td>getOutputNode</td><td>() → AnalyserNode</td><td>Même <code>AnalyserNode</code>.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Graphe audio interne</h3>
+                <div class="docs-graph">→ AnalyserNode → ctx.destination
+    └─ getByteTimeDomainData() / getByteFrequencyData() → canvas (requestAnimationFrame)</div>
+            </section>
+
+            <!-- ── my-butterchurn ── -->
+            <section class="docs-section" id="doc-butterchurn">
+                <h2>Butterchurn (Milkdrop)</h2>
+                <div class="tag">&lt;my-butterchurn&gt; — components/butterchurn.js</div>
+                <div class="docs-preview">
+                    <div class="window" style="width:340px">
+                        <div class="titlebar"><span class="titlebar-dot"></span>VISUALIZER</div>
+                        <my-butterchurn id="doc-butterchurn-instance"></my-butterchurn>
+                    </div>
+                </div>
+                <p class="design-note">Composant <strong>autonome et chaînable</strong>. Passthrough audio. Alimente le visualiseur Milkdrop (Butterchurn) via un <code>AnalyserNode</code>. Le rendu canvas est actif uniquement pendant la lecture (<code>audio-play</code> / <code>audio-pause</code>).</p>
+
+                <h3>Attributs</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Attribut</th><th>Type</th><th>Défaut</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>blend</td><td>number</td><td>2.0</td><td>Durée de transition en secondes entre les presets Milkdrop. Réactif.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Méthodes</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Méthode</th><th>Signature</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>connectComponent</td><td>(target) → void</td><td>Rarement utilisé — généralement dernier de la chaîne.</td></tr>
+                        <tr><td>getInputNode</td><td>() → GainNode</td><td>Nœud d'entrée.</td></tr>
+                        <tr><td>getOutputNode</td><td>() → AnalyserNode</td><td>Nœud de sortie (après le gain).</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Événements écoutés</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Événement</th><th>Sur</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>audio-play</td><td>document</td><td>Active le rendu canvas Milkdrop.</td></tr>
+                        <tr><td>audio-pause</td><td>document</td><td>Suspend le rendu canvas.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Graphe audio interne</h3>
+                <div class="docs-graph">→ GainNode → AnalyserNode → ctx.destination
+    └─ butterchurn.connectAudio(gainNode) → canvas (requestAnimationFrame)</div>
+            </section>
+
+        </div>
     </div>
-    <div class="window" id="win-playlist">
-        <div class="titlebar"><span class="titlebar-dot"></span>PLAYLIST</div>
-        <my-playlist id="playlist"></my-playlist>
-    </div>
-    <div class="window" id="win-eq" data-no-resize>
-        <div class="titlebar"><span class="titlebar-dot"></span>EQUALIZER</div>
-        <my-eq id="eq" preset="0,0,0,0,0,0"></my-eq>
-    </div>
-    <div class="window" id="win-waveform">
-        <div class="titlebar"><span class="titlebar-dot"></span>WAVEFORM</div>
-        <my-waveform id="waveform" color="#39e082" fft-size="1024"></my-waveform>
-    </div>
-    <div class="window" id="win-butterchurn">
-        <div class="titlebar"><span class="titlebar-dot"></span>VISUALIZER</div>
-        <my-butterchurn id="butterchurn"></my-butterchurn>
-    </div>
+
+    <script>
+        // Navigation entre sections de la doc
+        document.querySelector('.docs-nav').addEventListener('click', e => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const target = btn.dataset.target;
+            document.querySelectorAll('.docs-nav button').forEach(b => b.classList.toggle('active', b === btn));
+            document.querySelectorAll('.docs-section').forEach(s => s.classList.toggle('active', s.id === target));
+        });
+    </script>
 </main>
 </body>
 
