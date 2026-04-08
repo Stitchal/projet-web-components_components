@@ -451,6 +451,30 @@ class MyAudioPlayer extends ConnectableComponent {
         return this.#tracks[this.#currentIndex] ?? null;
     }
 
+    async play() {
+        const audioEl = this.shadowRoot.querySelector('#myplayer');
+        if (!audioEl) return;
+        await resumeAudioContext();
+        audioEl.play().catch(() => {});
+    }
+
+    pause() {
+        this.shadowRoot.querySelector('#myplayer')?.pause();
+    }
+
+    prev() {
+        this.shadowRoot.querySelector('#btnPrev')?.click();
+    }
+
+    next() {
+        this.shadowRoot.querySelector('#btnNext')?.click();
+    }
+
+    toggleMute() {
+        const audioEl = this.shadowRoot.querySelector('#myplayer');
+        if (audioEl) audioEl.muted = !audioEl.muted;
+    }
+
     disconnectedCallback() {
         this.#vuAnimating = false;
         this.#abortController?.abort();
@@ -475,7 +499,11 @@ class MyAudioPlayer extends ConnectableComponent {
     // --- Tracks ---
 
     async #loadTracks(srcAttr) {
-        const tracksUrl = srcAttr ? new URL(srcAttr, document.baseURI).href : new URL('../assets/tracks.json', import.meta.url).href;
+        if (!srcAttr) {
+            console.warn('my-audio-player: attribut "src" manquant — aucune piste chargée.');
+            return;
+        }
+        const tracksUrl = new URL(srcAttr, document.baseURI).href;
 
         try {
             const response = await fetch(tracksUrl);
@@ -569,12 +597,14 @@ class MyAudioPlayer extends ConnectableComponent {
             switchEl?.setValue(1);
             coverImage?.classList.add('playing');
             this.#startVuAnimation();
+            document.dispatchEvent(new CustomEvent('audio-play'));
         }, {signal});
 
         audioEl.addEventListener('pause', () => {
             switchEl?.setValue(0);
             coverImage?.classList.remove('playing');
             this.#stopVuAnimation();
+            document.dispatchEvent(new CustomEvent('audio-pause'));
         }, {signal});
 
         audioEl.addEventListener('ended', () => {
@@ -731,8 +761,6 @@ class MyAudioPlayer extends ConnectableComponent {
             if (coverWrapper) coverWrapper.style.background = `conic-gradient(var(--ring-bg, #1a1a2a) 0%, var(--ring-bg, #1a1a2a) 0%)`;
             if (progressFill) progressFill.style.width = '0%';
         }, {signal});
-        document.dispatchEvent(new CustomEvent('audio-play'));
-        document.dispatchEvent(new CustomEvent('audio-pause'));
     }
 }
 

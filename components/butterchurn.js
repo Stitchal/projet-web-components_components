@@ -1,4 +1,3 @@
-import "./libs/webaudiocontrols.js";
 import {ConnectableComponent} from "./ConnectableComponent.js";
 
 const butterchurnModule = await import('https://cdn.skypack.dev/butterchurn@2.6.7');
@@ -62,7 +61,6 @@ class Butterchurn extends ConnectableComponent {
     #rafId = null;
     #blendTime = 2.0;
     #abortController = null;
-    #connectedToPlayer = false;
     #analyser = null;
     #analyserData = null;
     #isPlaying = false;
@@ -162,11 +160,7 @@ class Butterchurn extends ConnectableComponent {
 
     #renderFrame() {
         if (!this.#animating || !this.#visualizer) return;
-        const player = document.querySelector('my-audio-player');
-        const audio = player?.shadowRoot?.querySelector('#myplayer');
-        const isPlaying = audio ? !audio.paused && !audio.ended : false;
-
-        if (isPlaying) {
+        if (this.#isPlaying) {
             this.#visualizer.render();
         }
         this.#rafId = requestAnimationFrame(() => this.#renderFrame());
@@ -187,21 +181,8 @@ class Butterchurn extends ConnectableComponent {
     #defineListeners() {
         this.#abortController = new AbortController();
         const {signal} = this.#abortController;
-        document.addEventListener('track-changed', () => {
-            const player = document.querySelector('my-audio-player');
-            if (player && !this.#connectedToPlayer) {
-                player.connectComponent(this);
-                this.#connectedToPlayer = true;
-                const audio = player.shadowRoot?.querySelector('#myplayer');
-                if (audio && !audio.paused) this.#isPlaying = true;
-            }
-        }, {signal});
-        document.addEventListener('audio-play', () => {
-            this.#isPlaying = true;
-        }, {signal});
-        document.addEventListener('audio-pause', () => {
-            this.#isPlaying = false;
-        }, {signal});
+        document.addEventListener('audio-play',  () => { this.#isPlaying = true;  }, {signal});
+        document.addEventListener('audio-pause', () => { this.#isPlaying = false; }, {signal});
     }
 
     disconnectedCallback() {
